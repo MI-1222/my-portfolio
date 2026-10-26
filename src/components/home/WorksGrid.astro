@@ -60,8 +60,19 @@ import { categories, projects } from '../../data/projects';
             as="article"
             interactive={true}
             accent={project.accent}
-            class="flex h-full flex-col justify-between p-5"
+            class:list={[
+              'relative flex h-full flex-col justify-between p-5',
+              !project.link && 'cursor-default!',
+            ]}
           >
+            {project.link && (
+              <a
+                href={project.link}
+                class="absolute inset-0 z-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-cyan/50"
+                aria-label={`${project.title}の詳細を見る`}
+              />
+            )}
+
             <div>
               <div class="mb-3 flex items-center justify-between gap-2 font-mono text-[11px]">
                 <span class="rounded bg-surface-subtle px-2 py-0.5 text-text-muted">
@@ -81,20 +92,8 @@ import { categories, projects } from '../../data/projects';
                 </span>
               </div>
 
-              <h3 class="text-base font-bold text-text-primary transition-colors hover:text-accent-cyan">
-                {project.link ? (
-                  <a href={project.link}>{project.title}</a>
-                ) : project.githubUrl ? (
-                  <a
-                    href={project.githubUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {project.title}
-                  </a>
-                ) : (
-                  project.title
-                )}
+              <h3 class="text-base font-bold text-text-primary">
+                {project.title}
               </h3>
               <p class="mt-1 font-mono text-xs text-text-secondary">
                 {project.subtitle}
@@ -121,21 +120,12 @@ import { categories, projects } from '../../data/projects';
                 </div>
 
                 <div class="flex items-center gap-2 font-mono text-xs">
-                  {project.link && (
-                    <a
-                      href={project.link}
-                      class="text-accent-cyan hover:underline"
-                      title="Deep Dive記事を読む"
-                    >
-                      Deep Dive →
-                    </a>
-                  )}
                   {project.githubUrl && (
                     <a
                       href={project.githubUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      class="group/link inline-flex items-center gap-1 text-text-muted transition-colors hover:text-text-primary"
+                      class="group/link relative z-10 -m-4 inline-flex items-center gap-1 p-4 text-text-muted transition-colors hover:text-text-primary"
                       title="GitHubを表示"
                     >
                       <span>GitHub</span>
