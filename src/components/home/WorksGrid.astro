@@ -6,6 +6,7 @@
 import Card from '../common/Card.astro';
 import Container from '../common/Container.astro';
 import OpenInNewSvg from '../svg/OpenInNew.astro';
+import GitHubIcon from '../svg/GitHubIcon.astro';
 import { categories, projects } from '../../data/projects';
 ---
 
@@ -125,9 +126,10 @@ import { categories, projects } from '../../data/projects';
                       href={project.githubUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      class="group/link relative z-10 -m-4 inline-flex items-center gap-1 p-4 text-text-muted transition-colors hover:text-text-primary"
+                      class="group/link relative z-10 -m-4 inline-flex items-center gap-1.5 p-4 text-text-muted transition-colors hover:text-text-primary"
                       title="GitHubを表示"
                     >
+                      <GitHubIcon class="size-3.5 opacity-80 transition-opacity group-hover/link:opacity-100" />
                       <span>GitHub</span>
                       <OpenInNewSvg
                         class="size-3.5"

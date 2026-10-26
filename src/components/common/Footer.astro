@@ -5,6 +5,7 @@
  */
 import Container from './Container.astro';
 import OpenInNewSvg from '../svg/OpenInNew.astro';
+import GitHubIcon from '../svg/GitHubIcon.astro';
 ---
 
 <footer class="border-t border-border-subtle bg-surface/50 py-12 transition-colors">
@@ -29,8 +30,9 @@ import OpenInNewSvg from '../svg/OpenInNew.astro';
           href="https://github.com/MI-1222"
           target="_blank"
           rel="noopener noreferrer"
-          class="group inline-flex items-center gap-1 text-text-secondary transition-colors hover:text-text-primary"
+          class="group inline-flex items-center gap-1.5 text-text-secondary transition-colors hover:text-text-primary"
         >
+          <GitHubIcon class="size-4 opacity-80 transition-opacity group-hover:opacity-100" />
           <span>GitHub</span>
           <OpenInNewSvg class="size-3.5" interactive={true} ariaHidden={true} />
         </a>
