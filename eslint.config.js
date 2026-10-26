@@ -11,8 +11,10 @@ export default [
 
   // Tailwind CSSの推奨ルール。
   {
-    ...eslintPluginTailwindcss.configs.recommended,
     files: ['**/*.{js,mjs,cjs,ts,jsx,tsx,astro}'],
+    plugins: {
+      tailwindcss: eslintPluginTailwindcss,
+    },
     settings: {
       tailwindcss: {
         cssConfigPath: 'src/styles/global.css',

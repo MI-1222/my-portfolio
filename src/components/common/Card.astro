@@ -1,0 +1,49 @@
+---
+/**
+ * 1pxヘアライン境界線とサーフェス背景を持つサイバーミニマル調カードコンポーネント。
+ */
+interface Props {
+  /** レンダリングするHTMLタグ(デフォルトは 'div')。 */
+  as?: 'div' | 'article' | 'section' | 'li';
+  /** ホバー時の微小インタラクションを有効にするかどうか。 */
+  interactive?: boolean;
+  /** アクセントカラーの指定(ホバーボーダー等に適用)。 */
+  accent?: 'cyan' | 'green' | 'coral' | 'purple' | 'none';
+  /** 追加のCSSクラス名。 */
+  class?: string;
+  /** GSAP等のスクリプト連携用データ属性。 */
+  dataAnimate?: string;
+}
+
+const {
+  as: Tag = 'div',
+  interactive = false,
+  accent = 'cyan',
+  class: className,
+  dataAnimate,
+  ...rest
+} = Astro.props;
+
+const accentHoverClasses: Record<NonNullable<Props['accent']>, string> = {
+  cyan: 'hover:border-accent-cyan/50 hover:shadow-[0_0_15px_rgba(86,212,221,0.08)]',
+  green:
+    'hover:border-accent-green/50 hover:shadow-[0_0_15px_rgba(57,211,83,0.08)]',
+  coral:
+    'hover:border-accent-coral/50 hover:shadow-[0_0_15px_rgba(247,129,102,0.08)]',
+  purple:
+    'hover:border-accent-purple/50 hover:shadow-[0_0_15px_rgba(188,140,255,0.08)]',
+  none: '',
+};
+---
+
+<Tag
+  class:list={[
+    'rounded-lg border border-border-subtle bg-surface p-6 text-text-primary transition-colors duration-200',
+    interactive && ['cursor-pointer', accentHoverClasses[accent]],
+    className,
+  ]}
+  data-animate={dataAnimate}
+  {...rest}
+>
+  <slot />
+</Tag>

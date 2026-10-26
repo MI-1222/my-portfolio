@@ -1,0 +1,38 @@
+---
+/**
+ * レスポンシブな水平幅と左右余白を統一管理するコンテナコンポーネント。
+ */
+interface Props {
+  /** レンダリングするHTMLタグ(デフォルトは 'div')。 */
+  as?: 'div' | 'section' | 'article' | 'main' | 'header' | 'footer';
+  /** 追加のCSSクラス名。 */
+  class?: string;
+  /** 最大横幅のバリアント('default' は max-w-7xl)。 */
+  size?: 'sm' | 'md' | 'default' | 'full';
+}
+
+const {
+  as: Tag = 'div',
+  class: className,
+  size = 'default',
+  ...rest
+} = Astro.props;
+
+const sizeClasses: Record<NonNullable<Props['size']>, string> = {
+  sm: 'max-w-3xl',
+  md: 'max-w-5xl',
+  default: 'max-w-7xl',
+  full: 'max-w-full',
+};
+---
+
+<Tag
+  class:list={[
+    'mx-auto w-full px-4 sm:px-6 lg:px-8',
+    sizeClasses[size],
+    className,
+  ]}
+  {...rest}
+>
+  <slot />
+</Tag>

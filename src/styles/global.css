@@ -1,1 +1,76 @@
 @import 'tailwindcss';
+
+/* -------------------------------------------------------------------------- */
+/* 1. バリアント定義。                                                          */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * data-theme属性に基づきdarkバリアントを解決する。
+ * `:where()`により詳細度の加算を0に抑制。
+ */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* -------------------------------------------------------------------------- */
+/* 2. サイバーミニマル デザイントークン設計。                                       */
+/* -------------------------------------------------------------------------- */
+@theme {
+  /* 固定アクセントカラー。 */
+  --color-accent-cyan: #56d4dd;
+  --color-accent-green: #39d353;
+  --color-accent-coral: #f78166;
+  --color-accent-purple: #bc8cff;
+
+  /* セマンティック変数へのエイリアスマッピング。 */
+  --color-canvas: var(--color-canvas);
+  --color-surface: var(--color-surface);
+  --color-surface-subtle: var(--color-surface-subtle);
+  --color-border-subtle: var(--color-border-subtle);
+  --color-border-muted: var(--color-border-muted);
+  --color-text-primary: var(--color-text-primary);
+  --color-text-secondary: var(--color-text-secondary);
+  --color-text-muted: var(--color-text-muted);
+
+  /* タイポグラフィ。 */
+  --font-sans:
+    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono:
+    'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+
+  /* モーション。 */
+  --ease-cyber: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* -------------------------------------------------------------------------- */
+/* 3. 動的テーマ CSS 変数定義 (セマンティックトークン)。                             */
+/* -------------------------------------------------------------------------- */
+:root,
+[data-theme='dark'] {
+  --color-canvas: #0d1117;
+  --color-surface: #161b22;
+  --color-surface-subtle: #21262d;
+  --color-border-subtle: #30363d;
+  --color-border-muted: #21262d;
+  --color-text-primary: #f0f6fc;
+  --color-text-secondary: #8b949e;
+  --color-text-muted: #484f58;
+}
+
+[data-theme='light'] {
+  --color-canvas: #ffffff;
+  --color-surface: #f6f8fa;
+  --color-surface-subtle: #eaeef2;
+  --color-border-subtle: #d0d7de;
+  --color-border-muted: #e1e4e8;
+  --color-text-primary: #1f2328;
+  --color-text-secondary: #656d76;
+  --color-text-muted: #8c959f;
+}
+
+/* -------------------------------------------------------------------------- */
+/* 4. 基本レイアウト・トランジション制御                                           */
+/* -------------------------------------------------------------------------- */
+/* テーマ切り替え時の一時的なアニメーション無効化クラス。 */
+.disable-transitions,
+.disable-transitions * {
+  transition: none !important;
+}

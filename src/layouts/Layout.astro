@@ -1,21 +1,79 @@
 ---
 /**
  * 全ページ共通の基本レイアウトコンポーネント。
+ * テーマ初期化(FOUC防止), Webフォント読み込み, 基本スタイルの適用を行う。
  */
+import { ClientRouter } from 'astro:transitions';
 import '../styles/global.css';
+
+interface Props {
+  /** ページのタイトル。 */
+  title?: string;
+  /** ページの説明文。 */
+  description?: string;
+}
+
+const {
+  title = 'Masahiro Yoshioka | Portfolio',
+  description = 'Systems, Platforms, and Developer Experience Portfolio',
+} = Astro.props;
 ---
 
 <!doctype html>
-<html lang="en" class="m-0 size-full">
+<html lang="ja" data-theme="dark" class="scroll-smooth">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" />
     <meta name="generator" content={Astro.generator} />
-    <title>Astro Basics</title>
+    <title>{title}</title>
+    <meta name="description" content={description} />
+
+    <!-- Google Fonts 読み込み。 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap"
+      rel="stylesheet"
+    />
+
+    <ClientRouter />
+
+    <!-- HTMLパース完了前に同期実行し、初期テーマ属性を決定。 -->
+    <script is:inline>
+      (function () {
+        const STORAGE_KEY = 'portfolio-theme';
+        try {
+          const savedTheme = localStorage.getItem(STORAGE_KEY);
+          const activeTheme = savedTheme || 'dark';
+          document.documentElement.setAttribute('data-theme', activeTheme);
+        } catch (_e) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      })();
+    </script>
+    <!-- Astro View Transitions 遷移時のテーマ再同期処理。 -->
+    <script>
+      /** local storage に保存されているテーマ。 */
+      const STORAGE_KEY = 'portfolio-theme';
+
+      /**
+       * DOMスワップ直後に保存済みテーマを再適用する。
+       */
+      function restoreTheme(): void {
+        try {
+          const savedTheme = localStorage.getItem(STORAGE_KEY) || 'dark';
+          document.documentElement.setAttribute('data-theme', savedTheme);
+        } catch (_e) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      }
+
+      document.addEventListener('astro:after-swap', restoreTheme);
+    </script>
   </head>
-  <body class="m-0 size-full">
+  <body class="min-h-screen bg-canvas font-sans text-text-primary antialiased selection:bg-accent-cyan/20 selection:text-accent-cyan">
     <slot />
   </body>
 </html>
