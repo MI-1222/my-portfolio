@@ -1,0 +1,215 @@
+---
+/**
+ * 全制作物を技術領域別に一覧表示するグリッドコンポーネント。
+ * クイックフィルタタブによるカテゴリ絞り込み機能を提供する。
+ */
+import Card from '../common/Card.astro';
+import Container from '../common/Container.astro';
+import OpenInNewSvg from '../svg/OpenInNew.astro';
+import { categories, projects } from '../../data/projects';
+---
+
+<section id="works" class="border-b border-border-subtle py-16 sm:py-24">
+  <Container size="default">
+    <!-- セクション見出し。 -->
+    <div class="mb-10 space-y-3">
+      <div class="flex items-center gap-2 font-mono text-xs text-accent-green">
+        <span>01 //</span>
+        <span>INDEX OF WORKS</span>
+      </div>
+      <h2 class="text-2xl font-bold tracking-tight text-text-primary sm:text-4xl">
+        Engineering Works
+      </h2>
+    </div>
+
+    <!-- カテゴリフィルタタブ。 -->
+    <div
+      class="mb-8 flex flex-wrap items-center gap-2"
+      role="tablist"
+      aria-label="制作物の技術領域フィルタ"
+    >
+      {categories.map((cat, idx) => (
+        <button
+          type="button"
+          role="tab"
+          aria-selected={idx === 0 ? 'true' : 'false'}
+          data-filter-tab={cat.id}
+          class:list={[
+            'filter-tab rounded-md border px-3 py-1.5 font-mono text-xs transition-colors focus:outline-none focus:ring-2 focus:ring-accent-cyan/40',
+            idx === 0
+              ? 'border-accent-cyan/60 bg-accent-cyan/10 font-semibold text-accent-cyan'
+              : 'border-border-subtle bg-surface text-text-secondary hover:border-border-strong hover:text-text-primary',
+          ]}
+        >
+          {cat.label}
+        </button>
+      ))}
+    </div>
+
+    <!-- 制作物カードグリッド (3カラム)。 -->
+    <div
+      id="works-grid-container"
+      class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3"
+    >
+      {projects.map((project) => (
+        <div
+          class="work-card-wrapper transition-all duration-200"
+          data-project-category={project.category}
+        >
+          <Card
+            as="article"
+            interactive={true}
+            accent={project.accent}
+            class="flex h-full flex-col justify-between p-5"
+          >
+            <div>
+              <div class="mb-3 flex items-center justify-between gap-2 font-mono text-[11px]">
+                <span class="rounded bg-surface-subtle px-2 py-0.5 text-text-muted">
+                  {project.categoryLabel}
+                </span>
+                <span class="flex items-center gap-1 text-text-secondary">
+                  <span
+                    class:list={[
+                      'inline-block h-1.5 w-1.5 rounded-full',
+                      project.status === 'OSS' && 'bg-accent-green',
+                      project.status === 'RESEARCH' && 'bg-accent-purple',
+                      project.status === 'INTERNAL' && 'bg-text-muted',
+                      project.status === 'PLANNING' && 'bg-accent-coral',
+                    ]}
+                  ></span>
+                  {project.status}
+                </span>
+              </div>
+
+              <h3 class="text-base font-bold text-text-primary transition-colors hover:text-accent-cyan">
+                {project.link ? (
+                  <a href={project.link}>{project.title}</a>
+                ) : project.githubUrl ? (
+                  <a
+                    href={project.githubUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {project.title}
+                  </a>
+                ) : (
+                  project.title
+                )}
+              </h3>
+              <p class="mt-1 font-mono text-xs text-text-secondary">
+                {project.subtitle}
+              </p>
+
+              <p class="mt-3 text-xs leading-relaxed text-text-secondary">
+                {project.summary}
+              </p>
+            </div>
+
+            <div class="mt-5 border-t border-border-subtle pt-3">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <div class="flex flex-wrap gap-1 font-mono text-[10px] text-text-muted">
+                  {project.tags.slice(0, 3).map((tag) => (
+                    <span class="rounded bg-surface-subtle px-1.5 py-0.5">
+                      {tag}
+                    </span>
+                  ))}
+                  {project.tags.length > 3 && (
+                    <span class="text-text-muted">
+                      +{project.tags.length - 3}
+                    </span>
+                  )}
+                </div>
+
+                <div class="flex items-center gap-2 font-mono text-xs">
+                  {project.link && (
+                    <a
+                      href={project.link}
+                      class="text-accent-cyan hover:underline"
+                      title="Deep Dive記事を読む"
+                    >
+                      Deep Dive →
+                    </a>
+                  )}
+                  {project.githubUrl && (
+                    <a
+                      href={project.githubUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="group/link inline-flex items-center gap-1 text-text-muted transition-colors hover:text-text-primary"
+                      title="GitHubを表示"
+                    >
+                      <span>GitHub</span>
+                      <OpenInNewSvg
+                        class="size-3.5"
+                        interactive={true}
+                        ariaHidden={true}
+                      />
+                    </a>
+                  )}
+                  {project.status === 'PLANNING' &&
+                  !project.githubUrl &&
+                  !project.link ? (
+                    <span class="text-[11px] text-accent-coral/80">
+                      [Planning]
+                    </span>
+                  ) : !project.isPublic && !project.link ? (
+                    <span class="text-[11px] text-text-muted">[Private]</span>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+          </Card>
+        </div>
+      ))}
+    </div>
+  </Container>
+</section>
+
+<script>
+  /**
+   * 制作物グリッドのタブフィルタ機能を初期化する。
+   * AstroのView Transitions(astro:page-load)に対応。
+   */
+  function setupWorksFilter(): void {
+    const tabs = document.querySelectorAll<HTMLButtonElement>('.filter-tab');
+    const cards = document.querySelectorAll<HTMLElement>('.work-card-wrapper');
+
+    if (!tabs.length || !cards.length) {
+      return;
+    }
+
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        const filter = tab.getAttribute('data-filter-tab');
+        if (!filter) {
+          return;
+        }
+
+        // タブのアクティブスタイルを更新。
+        tabs.forEach((t) => {
+          const isActive = t === tab;
+          t.setAttribute('aria-selected', isActive ? 'true' : 'false');
+          if (isActive) {
+            t.className =
+              'filter-tab rounded-md border border-accent-cyan/60 bg-accent-cyan/10 px-3 py-1.5 font-mono text-xs font-semibold text-accent-cyan transition-colors focus:outline-none focus:ring-2 focus:ring-accent-cyan/40';
+          } else {
+            t.className =
+              'filter-tab rounded-md border border-border-subtle bg-surface px-3 py-1.5 font-mono text-xs text-text-secondary transition-colors hover:border-border-strong hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-accent-cyan/40';
+          }
+        });
+
+        // カードのフィルタリングを実行。
+        cards.forEach((card) => {
+          const category = card.getAttribute('data-project-category');
+          if (filter === 'all' || category === filter) {
+            card.classList.remove('hidden');
+          } else {
+            card.classList.add('hidden');
+          }
+        });
+      });
+    });
+  }
+
+  document.addEventListener('astro:page-load', setupWorksFilter);
+</script>

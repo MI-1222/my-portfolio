@@ -1,0 +1,61 @@
+---
+/**
+ * サイト共通のフッターコンポーネント。
+ * システム仕様ログ、外部リンク集約、ページトップアンカー、著作権表示を提供する。
+ */
+import Container from './Container.astro';
+import OpenInNewSvg from '../svg/OpenInNew.astro';
+---
+
+<footer class="border-t border-border-subtle bg-surface/50 py-12 transition-colors">
+  <Container size="default">
+    <div class="flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
+      <!-- 左側: ブランドおよびシステムログ仕様。 -->
+      <div class="space-y-3">
+        <div class="flex items-center gap-2 font-mono text-sm font-semibold text-text-primary">
+          <span class="text-accent-cyan">&gt;_</span>
+          <span>MI-1222</span>
+        </div>
+        <div class="space-y-1 font-mono text-xs text-text-muted">
+          <p>HOST: Cloudflare Workers (Static Assets) / Edge CDN</p>
+          <p>BUILD: Astro 7.x SSG / Tailwind CSS v4 / Minimal Vanilla JS</p>
+          <p>STATUS: 200 OK / All Systems Operational</p>
+        </div>
+      </div>
+
+      <!-- 右側: 外部リンク集約, ページトップリンク。 -->
+      <div class="flex flex-wrap items-center gap-6 font-mono text-xs">
+        <a
+          href="https://github.com/MI-1222"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="group inline-flex items-center gap-1 text-text-secondary transition-colors hover:text-text-primary"
+        >
+          <span>GitHub</span>
+          <OpenInNewSvg class="size-3.5" interactive={true} ariaHidden={true} />
+        </a>
+        <a
+          href="/about"
+          class="text-text-secondary transition-colors hover:text-text-primary"
+        >
+          About / Profile
+        </a>
+        <a
+          href="#top"
+          class="text-accent-cyan transition-colors hover:underline"
+        >
+          [^ TOP]
+        </a>
+      </div>
+    </div>
+
+    <!-- 最下部: コピーライト, プライバシー注記。 -->
+    <div class="mt-8 border-t border-border-subtle pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs text-text-muted">
+      <p>
+        &copy; 2026 MI-1222 &mdash; Crafted with precision & engineering
+        aesthetics.
+      </p>
+      <p>Privacy Protected &bull; Public Domain Profile</p>
+    </div>
+  </Container>
+</footer>

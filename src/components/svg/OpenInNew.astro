@@ -1,0 +1,42 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+
+/**
+ * 外部リンクや別タブ展開を表すオープンアイコンコンポーネント。
+ * Google Material Symbols の open_in_new アイコンを採用。
+ */
+interface Props extends HTMLAttributes<'svg'> {
+  /** 追加のCSSクラス名。 */
+  class?: string;
+  /** 親要素ホバー時に右上へ微小移動するアニメーションを有効にするかどうか。 */
+  interactive?: boolean;
+  /** アクセシビリティ用のラベル。 */
+  ariaLabel?: string;
+  /** 装飾用アイコンとして支援技術から隠すかどうか。 */
+  ariaHidden?: boolean;
+}
+
+const {
+  class: className,
+  interactive = false,
+  ariaLabel,
+  ariaHidden = true,
+  ...rest
+} = Astro.props;
+---
+
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 -960 960 960"
+  fill="currentColor"
+  class:list={[
+    'transition-transform duration-200',
+    interactive && 'group-hover:translate-x-0.5 group-hover:-translate-y-0.5',
+    className,
+  ]}
+  aria-label={ariaLabel}
+  aria-hidden={ariaHidden ? 'true' : undefined}
+  {...rest}
+>
+  <path d="M180-120q-24 0-42-18t-18-42v-600q0-24 18-42t42-18h279v60H180v600h600v-279h60v279q0 24-18 42t-42 18H180Zm202-219-42-43 398-398H519v-60h321v321h-60v-218L382-339Z"></path>
+</svg>

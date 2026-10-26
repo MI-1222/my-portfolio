@@ -1,0 +1,133 @@
+---
+/**
+ * トップページのヒーローセクションコンポーネント。
+ * サイバーミニマルなHUDメタデータ、静的疑似ターミナルプロンプト、アイデンティティステートメントを提示する。
+ */
+import Container from '../common/Container.astro';
+---
+
+<section class="relative overflow-hidden border-b border-border-subtle py-16 sm:py-24">
+  <!-- サイバードットマトリクス背景 (Pure CSS)。 -->
+  <div
+    class="pointer-events-none absolute inset-0 -z-10 opacity-30 bg-[radial-gradient(var(--color-border-subtle)_1px,transparent_1px)] bg-size-[24px_24px]"
+    aria-hidden="true"
+  ></div>
+
+  <Container size="default">
+    <div class="flex flex-col items-start gap-8">
+      <!-- 1. HUD システムパラメータ行 (等幅フォント)。 -->
+      <div
+        class="flex flex-wrap items-center gap-2 font-mono text-[11px] text-text-muted"
+        aria-label="システムステータス情報"
+      >
+        <span class="rounded border border-border-subtle bg-surface/80 px-2 py-0.5 text-accent-cyan">
+          [SYS.ID: MI-1222]
+        </span>
+        <span class="rounded border border-border-subtle bg-surface/80 px-2 py-0.5">
+          [LOC: TOKYO 35.7°N, 139.7°E]
+        </span>
+        <span class="hidden rounded border border-border-subtle bg-surface/80 px-2 py-0.5 sm:inline">
+          [CORE: RUST / GO / TS / LEAN 4]
+        </span>
+        <span class="rounded border border-border-subtle bg-surface/80 px-2 py-0.5 text-accent-green">
+          [STATUS: 200 OK]
+        </span>
+      </div>
+
+      <!-- 2. タイトル & 専門領域見出し。 -->
+      <div class="space-y-3">
+        <h1 class="text-3xl font-extrabold tracking-tight text-text-primary sm:text-5xl lg:text-6xl">
+          MI-1222
+        </h1>
+        <p class="font-mono text-base font-medium text-accent-cyan sm:text-xl">
+          Systems & Cloud Architecture Engineer
+        </p>
+      </div>
+
+      <!-- 3. 静的疑似ターミナルプロンプト (Zero JS / CSS 点滅カーソル)。 -->
+      <div class="w-full max-w-2xl rounded-lg border border-border-subtle bg-surface p-4 font-mono text-xs sm:text-sm text-text-secondary shadow-sm">
+        <div class="mb-3 flex items-center gap-2 border-b border-border-subtle pb-2 text-[11px] text-text-muted">
+          <span class="inline-block size-2.5 rounded-full bg-border-strong"></span>
+          <span class="inline-block size-2.5 rounded-full bg-border-strong"></span>
+          <span class="inline-block size-2.5 rounded-full bg-border-strong"></span>
+          <span class="ml-2">terminal — session: active</span>
+        </div>
+        <div class="space-y-2 leading-relaxed">
+          <p>
+            <span class="text-accent-green">$</span>{' '}
+            <span class="text-text-primary">whoami</span>
+          </p>
+          <p class="text-text-secondary">
+            &gt; MI-1222 | Systems, Cloud & Developer Experience Engineer
+          </p>
+          <p>
+            <span class="text-accent-green">$</span>{' '}
+            <span class="text-text-primary">cat core-focus.txt</span>
+          </p>
+          <p class="text-text-secondary">
+            &gt; Rust (CST/AST, Systems), Go (Cloud Run, Microservices),
+            TypeScript (DX, Web), Lean 4 (Formal Verification)
+            <span
+              class="inline-block h-3.5 w-1.5 translate-y-0.5 bg-accent-cyan animate-pulse"
+              aria-hidden="true"
+            ></span>
+          </p>
+        </div>
+      </div>
+
+      <!-- 4. コアステートメントと要約。 -->
+      <div class="max-w-3xl space-y-3">
+        <p class="text-lg font-medium leading-relaxed text-text-primary sm:text-xl">
+          課題の本質を見抜き、低レイヤ・基盤からWebまで最適な技術を選び抜く自走型エンジニア。
+        </p>
+        <p class="text-sm leading-relaxed text-text-secondary sm:text-base">
+          東京科学大学(旧 東京工業大学)在学。
+          知的好奇心を原点に、OS・構文解析からクラウドエッジ基盤まで深く探求。
+          既存ツールの非効率をプロトコルや構文木(CST)のレベルから根本解決します。
+        </p>
+      </div>
+
+      <!-- 5. 主要技術スタックタグ。 -->
+      <div class="flex flex-wrap items-center gap-2 font-mono text-xs">
+        <span class="rounded-md border border-accent-coral/30 bg-accent-coral/10 px-2.5 py-1 text-accent-coral">
+          # Rust
+        </span>
+        <span class="rounded-md border border-accent-cyan/30 bg-accent-cyan/10 px-2.5 py-1 text-accent-cyan">
+          # Go
+        </span>
+        <span class="rounded-md border border-accent-green/30 bg-accent-green/10 px-2.5 py-1 text-accent-green">
+          # TypeScript
+        </span>
+        <span class="rounded-md border border-accent-purple/30 bg-accent-purple/10 px-2.5 py-1 text-accent-purple">
+          # Lean 4
+        </span>
+        <span class="rounded-md border border-border-subtle bg-surface px-2.5 py-1 text-text-muted">
+          # Cloud Run
+        </span>
+        <span class="rounded-md border border-border-subtle bg-surface px-2.5 py-1 text-text-muted">
+          # Cloudflare
+        </span>
+      </div>
+
+      <!-- 6. アクションボタン群。 -->
+      <div class="flex flex-wrap items-center gap-4 pt-2">
+        <a
+          href="#works"
+          class="group inline-flex items-center gap-2 rounded-lg bg-text-primary px-5 py-2.5 font-mono text-sm font-semibold text-canvas transition-opacity hover:opacity-90"
+        >
+          <span>Explore Works</span>
+          <span class="transition-transform group-hover:translate-y-0.5">
+            ↓
+          </span>
+        </a>
+        <a
+          href="/about"
+          class="inline-flex items-center gap-2 rounded-lg border border-border-subtle bg-surface px-5 py-2.5 font-mono text-sm font-medium text-text-primary transition-colors hover:border-border-strong hover:bg-surface-subtle"
+        >
+          <span>View Career / About</span>
+          <span>→</span>
+        </a>
+      </div>
+    </div>
+  </Container>
+</section>

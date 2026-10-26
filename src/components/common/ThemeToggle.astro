@@ -1,0 +1,70 @@
+---
+import DarkModeSvg from '../svg/DarkMode.astro';
+import LightModeSvg from '../svg/LightMode.astro';
+
+/**
+ * ダークテーマとライトテーマを切り替えるトグルボタンコンポーネント。
+ * `localStorage` および `document.documentElement` の `data-theme` 属性と同期する。
+ */
+---
+
+<button
+  id="theme-toggle"
+  type="button"
+  class="group relative inline-flex size-9 items-center justify-center rounded-md border border-border-subtle bg-surface text-text-secondary transition-colors hover:border-border-strong hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-accent-cyan/50"
+  aria-label="テーマを切り替える"
+  title="テーマ切り替え (Dark / Light)"
+>
+  <!-- 太陽アイコン (ダークテーマ時に表示し、ライトテーマへの切り替えを促す)。 -->
+  <LightModeSvg
+    interactive={true}
+    class="hidden size-4 dark:block"
+    ariaHidden={true}
+  />
+
+  <!-- 月アイコン (ライトテーマ時に表示し、ダークテーマへの切り替えを促す)。 -->
+  <DarkModeSvg
+    interactive={true}
+    class="block size-4 dark:hidden"
+    ariaHidden={true}
+  />
+</button>
+
+<script>
+  /** ローカルストレージキー名。 */
+  const STORAGE_KEY = 'portfolio-theme';
+
+  /**
+   * テーマ切り替え処理をセットアップする。
+   * AstroのView Transitionsに対応するため、`astro:page-load` ごとに再登録を行う。
+   */
+  function setupThemeToggle(): void {
+    const button = document.getElementById('theme-toggle');
+    if (!button) {
+      return;
+    }
+
+    button.addEventListener('click', () => {
+      const currentTheme =
+        document.documentElement.getAttribute('data-theme') || 'dark';
+      const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+      // 一時的にトランジションを無効化してチラつきを抑制。
+      document.documentElement.classList.add('disable-transitions');
+      document.documentElement.setAttribute('data-theme', nextTheme);
+
+      try {
+        localStorage.setItem(STORAGE_KEY, nextTheme);
+      } catch {
+        // ローカルストレージ書き込みエラーは無視。
+      }
+
+      window.requestAnimationFrame(() => {
+        document.documentElement.classList.remove('disable-transitions');
+      });
+    });
+  }
+
+  // 初期ロードおよびページ遷移時の再登録。
+  document.addEventListener('astro:page-load', setupThemeToggle);
+</script>

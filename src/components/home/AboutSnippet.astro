@@ -1,0 +1,79 @@
+---
+/**
+ * 経歴とエンジニアリングマインドセットのハイライトを表示するスニペットコンポーネント。
+ * `/about` ページへの導線を提供する。
+ */
+import Card from '../common/Card.astro';
+import Container from '../common/Container.astro';
+---
+
+<section class="border-b border-border-subtle py-16 sm:py-24">
+  <Container size="default">
+    <div class="mb-10 space-y-3">
+      <div class="flex items-center gap-2 font-mono text-xs text-accent-purple">
+        <span>02 //</span>
+        <span>BACKGROUND & MINDSET</span>
+      </div>
+      <h2 class="text-2xl font-bold tracking-tight text-text-primary sm:text-4xl">
+        Engineering Journey
+      </h2>
+    </div>
+
+    <!-- 3大ハイライトカード。 -->
+    <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+      <!-- 1. バックグラウンド, 自走力。 -->
+      <Card as="div" accent="purple" class="space-y-3 p-6">
+        <div class="font-mono text-xs font-semibold text-accent-purple">
+          [01] ACADEMICS & ROOTS
+        </div>
+        <h3 class="text-lg font-bold text-text-primary">
+          東工大 × 独学ソフトウェア探求
+        </h3>
+        <p class="text-xs leading-relaxed text-text-secondary">
+          東京科学大学(旧 東京工業大学)在学。
+          知的好奇心を原点にRust、Go、TypeScriptを独学で探求し、数学全般(特に圏論や代数学)への関心も深める。
+          応用情報技術者試験(AP)合格。
+        </p>
+      </Card>
+
+      <!-- 2. 技術選定と実装深度。 -->
+      <Card as="div" accent="cyan" class="space-y-3 p-6">
+        <div class="font-mono text-xs font-semibold text-accent-cyan">
+          [02] PROBLEM-SOLVING
+        </div>
+        <h3 class="text-lg font-bold text-text-primary">
+          課題に応じた技術選定と実装深度
+        </h3>
+        <p class="text-xs leading-relaxed text-text-secondary">
+          YAGNI原則に基づき適切な抽象度と技術を選定。
+          表層の組み合わせにとどまらず、必要であればプロトコルやOS基盤層まで潜り込んで構造的に解決。
+        </p>
+      </Card>
+
+      <!-- 3. エンジニアリングと運用の自動化。 -->
+      <Card as="div" accent="green" class="space-y-3 p-6">
+        <div class="font-mono text-xs font-semibold text-accent-green">
+          [03] ENGINEERING & AUTOMATION
+        </div>
+        <h3 class="text-lg font-bold text-text-primary">
+          属人性の排除と運用の自動化
+        </h3>
+        <p class="text-xs leading-relaxed text-text-secondary">
+          型定義やモノレポ構成による安全なコードベースの確立から、各種連携パイプラインの整備まで、
+          仕組み化によってチームの生産性と堅牢性を向上。
+        </p>
+      </Card>
+    </div>
+
+    <!-- `/about` への導線リンク。 -->
+    <div class="mt-8 flex justify-start">
+      <a
+        href="/about"
+        class="inline-flex items-center gap-2 rounded-lg border border-border-subtle bg-surface px-5 py-2.5 font-mono text-sm font-medium text-text-primary transition-colors hover:border-border-strong hover:bg-surface-subtle"
+      >
+        <span>Read Full Profile, Journey & Skills Matrix</span>
+        <span>→</span>
+      </a>
+    </div>
+  </Container>
+</section>

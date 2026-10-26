@@ -1,10 +1,14 @@
 import eslintPluginAstro from 'eslint-plugin-astro';
 import eslintPluginTailwindcss from 'eslint-plugin-tailwindcss';
+import tseslint from 'typescript-eslint';
 
 export default [
   {
     ignores: ['dist/**', '.astro/**', '.agent/**', '.local/**'],
   },
+
+  // TypeScriptの推奨ルール。
+  ...tseslint.configs.recommended,
 
   // Astroの推奨ルール。
   ...eslintPluginAstro.configs.recommended,

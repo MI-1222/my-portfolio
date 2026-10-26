@@ -4,6 +4,8 @@
  * テーマ初期化(FOUC防止), Webフォント読み込み, 基本スタイルの適用を行う。
  */
 import { ClientRouter } from 'astro:transitions';
+import Header from '../components/common/Header.astro';
+import Footer from '../components/common/Footer.astro';
 import '../styles/global.css';
 
 interface Props {
@@ -11,11 +13,17 @@ interface Props {
   title?: string;
   /** ページの説明文。 */
   description?: string;
+  /** ヘッダーを非表示にするかどうか。 */
+  hideHeader?: boolean;
+  /** フッターを非表示にするかどうか。 */
+  hideFooter?: boolean;
 }
 
 const {
-  title = 'Masahiro Yoshioka | Portfolio',
-  description = 'Systems, Platforms, and Developer Experience Portfolio',
+  title = 'MI-1222 | Systems & Cloud Architecture Engineer',
+  description = 'Systems, Cloud Architecture, and Developer Experience Portfolio of MI-1222.',
+  hideHeader = false,
+  hideFooter = false,
 } = Astro.props;
 ---
 
@@ -48,7 +56,7 @@ const {
           const savedTheme = localStorage.getItem(STORAGE_KEY);
           const activeTheme = savedTheme || 'dark';
           document.documentElement.setAttribute('data-theme', activeTheme);
-        } catch (_e) {
+        } catch {
           document.documentElement.setAttribute('data-theme', 'dark');
         }
       })();
@@ -65,7 +73,7 @@ const {
         try {
           const savedTheme = localStorage.getItem(STORAGE_KEY) || 'dark';
           document.documentElement.setAttribute('data-theme', savedTheme);
-        } catch (_e) {
+        } catch {
           document.documentElement.setAttribute('data-theme', 'dark');
         }
       }
@@ -73,7 +81,14 @@ const {
       document.addEventListener('astro:after-swap', restoreTheme);
     </script>
   </head>
-  <body class="min-h-screen bg-canvas font-sans text-text-primary antialiased selection:bg-accent-cyan/20 selection:text-accent-cyan">
-    <slot />
+  <body
+    id="top"
+    class="flex min-h-screen flex-col bg-canvas font-sans text-text-primary antialiased selection:bg-accent-cyan/20 selection:text-accent-cyan"
+  >
+    {!hideHeader && <Header />}
+    <main class="flex-1">
+      <slot />
+    </main>
+    {!hideFooter && <Footer />}
   </body>
 </html>
