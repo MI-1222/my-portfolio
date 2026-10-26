@@ -1,4 +1,5 @@
 import eslintPluginAstro from 'eslint-plugin-astro';
+import eslintPluginTailwindcss from 'eslint-plugin-tailwindcss';
 
 export default [
   {
@@ -7,6 +8,24 @@ export default [
 
   // Astroの推奨ルール。
   ...eslintPluginAstro.configs.recommended,
+
+  // Tailwind CSSの推奨ルール。
+  {
+    ...eslintPluginTailwindcss.configs.recommended,
+    files: ['**/*.{js,mjs,cjs,ts,jsx,tsx,astro}'],
+    settings: {
+      tailwindcss: {
+        cssConfigPath: 'src/styles/global.css',
+      },
+    },
+    rules: {
+      ...eslintPluginTailwindcss.configs.recommended.rules,
+      // クラス名の並び順はPrettierプラグイン(prettier-plugin-tailwindcss)に委ねるため無効化。
+      'tailwindcss/classnames-order': 'off',
+      // AstroのスコープドCSSクラスとの併用を許容するため無効化。
+      'tailwindcss/no-custom-classname': 'off',
+    },
+  },
   {
     rules: {
       // --- Astro固有の安全・記法ルール ---

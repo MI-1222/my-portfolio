@@ -1,5 +1,12 @@
+---
+/**
+ * 全ページ共通の基本レイアウトコンポーネント。
+ */
+import '../styles/global.css';
+---
+
 <!doctype html>
-<html lang="en">
+<html lang="en" class="m-0 size-full">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
@@ -8,16 +15,7 @@
     <meta name="generator" content={Astro.generator} />
     <title>Astro Basics</title>
   </head>
-  <body>
+  <body class="m-0 size-full">
     <slot />
   </body>
 </html>
-
-<style>
-  html,
-  body {
-    margin: 0;
-    width: 100%;
-    height: 100%;
-  }
-</style>

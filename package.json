@@ -15,13 +15,17 @@
     "format": "prettier --write src astro.config.mjs eslint.config.js tsconfig.json README.md"
   },
   "dependencies": {
-    "astro": "^7.3.8"
+    "@tailwindcss/vite": "^4.3.3",
+    "astro": "^7.3.8",
+    "tailwindcss": "^4.3.3"
   },
   "devDependencies": {
     "eslint": "^10.13.0",
     "eslint-plugin-astro": "^3.2.1",
+    "eslint-plugin-tailwindcss": "^4.4.0",
     "prettier": "3.9.10",
     "prettier-plugin-astro": "1.1.1",
+    "prettier-plugin-tailwindcss": "^0.8.1",
     "typescript-eslint": "^8.71.2"
   }
 }
