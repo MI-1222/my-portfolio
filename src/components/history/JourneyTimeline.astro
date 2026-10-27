@@ -1,113 +1,238 @@
 ---
 /**
  * 開発タイムラインコンポーネント。
- * `git log --graph` を模した縦型タイムラインにより、学習と開発の歩みを提示する。
- * HTML標準の <details> / <summary> を活用し、Zero JSで各コミットのアコーディオン開閉を実現。
- * 1つのブランチから複数回PRを発行・マージする実践的GitHubフローを可視化する。
+ * インラインSVGマルチレーン方式により、複数の未マージブランチが並行して並走する
+ * 本格的なGit Network Graphを描画する。
+ * デスクトップでは最大6レーン(main, math, cert, web-dx, systems, theory)の並走・分岐・マージ曲線を表示。
+ * モバイルでは適応型の1本ラインドット表示。
+ * HTML標準の <details> / <summary> を活用し、Zero JSでアコーディオン開閉を実現。
  */
-import { timelineCommits } from '../../data/history';
+import { timelineCommits, branchLanes } from '../../data/history';
+import {
+  getLaneX,
+  splitContext,
+  tokenizeInline,
+  parseCommentBlocks,
+  getIdenticonData,
+} from '../../utils/historyHelper';
 
-const branchAccentStyles = {
-  cyan: {
-    dot: 'border-accent-cyan bg-accent-cyan/20 text-accent-cyan',
-    badge: 'border-accent-cyan/30 bg-accent-cyan/10 text-accent-cyan',
-    line: 'bg-accent-cyan/40',
-  },
-  purple: {
-    dot: 'border-accent-purple bg-accent-purple/20 text-accent-purple',
-    badge: 'border-accent-purple/30 bg-accent-purple/10 text-accent-purple',
-    line: 'bg-accent-purple/40',
-  },
-  coral: {
-    dot: 'border-accent-coral bg-accent-coral/20 text-accent-coral',
-    badge: 'border-accent-coral/30 bg-accent-coral/10 text-accent-coral',
-    line: 'bg-accent-coral/40',
-  },
-  green: {
-    dot: 'border-accent-green bg-accent-green/20 text-accent-green',
-    badge: 'border-accent-green/30 bg-accent-green/10 text-accent-green',
-    line: 'bg-accent-green/40',
-  },
+const colorHex: Record<string, string> = {
+  green: '#39d353',
+  cyan: '#56d4dd',
+  amber: '#e3b341',
+  coral: '#f78166',
+  blue: '#58a6ff',
+  purple: '#bc8cff',
+};
+
+const branchAccentStyles: Record<string, { badge: string }> = {
+  green: { badge: 'border-[#39d353]/30 bg-[#39d353]/10 text-[#39d353]' },
+  cyan: { badge: 'border-[#56d4dd]/30 bg-[#56d4dd]/10 text-[#56d4dd]' },
+  amber: { badge: 'border-[#e3b341]/30 bg-[#e3b341]/10 text-[#e3b341]' },
+  coral: { badge: 'border-[#f78166]/30 bg-[#f78166]/10 text-[#f78166]' },
+  blue: { badge: 'border-[#58a6ff]/30 bg-[#58a6ff]/10 text-[#58a6ff]' },
+  purple: { badge: 'border-[#bc8cff]/30 bg-[#bc8cff]/10 text-[#bc8cff]' },
 };
 ---
 
-<section class="py-8 sm:py-12">
-  <div class="mb-10 space-y-3">
-    <!-- ブランチ色凡例。 -->
-    <div class="flex flex-wrap items-center gap-2 pt-2 font-mono text-[11px] text-text-secondary">
-      <span class="text-text-muted">Branches:</span>
+<section class="py-6 sm:py-10">
+  <!-- ブランチ色凡例。 -->
+  <div class="mb-8 flex flex-wrap items-center gap-2 font-mono text-[11px] text-text-secondary">
+    <span class="text-text-muted">Active Branches:</span>
+    {branchLanes.map((laneDef) => (
       <span class="inline-flex items-center gap-1.5 rounded border border-border-subtle bg-surface px-2 py-0.5">
-        <span class="size-2 rounded-full bg-accent-green"></span>
-        <span>main</span>
+        <span
+          class="size-2 rounded-full"
+          style={{ backgroundColor: laneDef.colorHex }}
+        />
+        <span>{laneDef.name}</span>
       </span>
-      <span class="inline-flex items-center gap-1.5 rounded border border-border-subtle bg-surface px-2 py-0.5">
-        <span class="size-2 rounded-full bg-accent-cyan"></span>
-        <span>feat/high-school</span>
-      </span>
-      <span class="inline-flex items-center gap-1.5 rounded border border-border-subtle bg-surface px-2 py-0.5">
-        <span class="size-2 rounded-full bg-accent-coral"></span>
-        <span>feat/engineering-journey</span>
-      </span>
-      <span class="inline-flex items-center gap-1.5 rounded border border-border-subtle bg-surface px-2 py-0.5">
-        <span class="size-2 rounded-full bg-accent-purple"></span>
-        <span>feat/systems-and-theory</span>
-      </span>
-    </div>
+    ))}
   </div>
 
-  <!-- Gitログ風タイムライン。 -->
-  <div class="relative pl-6 sm:pl-8">
-    <!-- 縦方向のGitブランチ幹。 -->
-    <div
-      class="absolute bottom-4 left-2.5 top-3 w-px bg-border-subtle sm:left-3.5"
-      aria-hidden="true"
-    ></div>
+  <!-- Git Graph タイムラインコンテナ。 -->
+  <div class="relative">
+    {timelineCommits.map((item, index) => {
+      const style =
+        branchAccentStyles[item.branchAccent] || branchAccentStyles.green;
+      const isLast = index === timelineCommits.length - 1;
+      const commitX = getLaneX(item.commitLane);
+      const commitColor = colorHex[item.branchAccent] || colorHex.green;
 
-    <div class="space-y-4">
-      {timelineCommits.map((item) => {
-        const style =
-          branchAccentStyles[item.branchAccent] || branchAccentStyles.green;
+      return (
+        <div class="relative flex items-stretch pb-5 group">
+          {/* ----------------------------------------------------------- */}
+          {/* デスクトップ用: マルチレーン SVG Git Graph (幅 126px)       */}
+          {/* ----------------------------------------------------------- */}
+          <div
+            class="hidden sm:block relative w-[126px] shrink-0 select-none"
+            aria-hidden="true"
+          >
+            <svg
+              class="absolute inset-0 size-full overflow-visible"
+              preserveAspectRatio="none"
+            >
+              {/* 1. アクティブな全並走レーンの縦線・分岐線・合流線 */}
+              {item.activeLanes.map((laneIdx) => {
+                const laneDef = branchLanes.find((l) => l.lane === laneIdx);
+                const laneColor = laneDef?.colorHex || colorHex.green;
+                const lx = getLaneX(laneIdx);
 
-        return (
-          <div class="relative group">
-            <div class="absolute -left-6 top-3.5 flex size-5 -translate-x-1/2 items-center justify-center sm:-left-8">
-              {item.isPrMerge ? (
-                <span class="flex size-4 items-center justify-center rounded-full border border-accent-purple bg-surface shadow-[0_0_8px_rgba(188,140,255,0.4)]">
-                  <svg
-                    class="size-2.5 text-accent-purple"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    stroke-width="3"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
+                // A: root コミット (始点)
+                if (item.graphType === 'root' && laneIdx === 0) {
+                  return (
+                    <line
+                      x1={lx}
+                      y1="22"
+                      x2={lx}
+                      y2="100%"
+                      stroke={laneColor}
+                      stroke-width="2"
                     />
-                  </svg>
-                </span>
+                  );
+                }
+
+                // B: この行で分岐開始するレーン (fork)
+                if (item.graphType === 'fork' && item.commitLane === laneIdx) {
+                  const fromX = getLaneX(item.forkFromLane ?? 0);
+                  return (
+                    <g>
+                      {/* 分岐元からこのレーンへのベジェ曲線 */}
+                      <path
+                        d={`M ${fromX} 0 C ${fromX} 14, ${lx} 10, ${lx} 22`}
+                        fill="none"
+                        stroke={laneColor}
+                        stroke-width="2"
+                      />
+                      {/* 分岐点から下へ伸びる縦線 */}
+                      <line
+                        x1={lx}
+                        y1="22"
+                        x2={lx}
+                        y2="100%"
+                        stroke={laneColor}
+                        stroke-width="2"
+                      />
+                    </g>
+                  );
+                }
+
+                // C: この行で合流・終了するレーン (final-pr-merge)
+                if (
+                  item.graphType === 'final-pr-merge' &&
+                  item.mergeFromLane === laneIdx
+                ) {
+                  const toX = getLaneX(item.commitLane);
+                  return (
+                    <path
+                      d={`M ${lx} 0 C ${lx} 14, ${toX} 10, ${toX} 22`}
+                      fill="none"
+                      stroke={colorHex.purple}
+                      stroke-width="2"
+                    />
+                  );
+                }
+
+                // D: 途中のPRマージ (intermediate-pr-merge) の合流レーン
+                if (
+                  item.graphType === 'intermediate-pr-merge' &&
+                  item.mergeFromLane === laneIdx
+                ) {
+                  const toX = getLaneX(item.commitLane);
+                  return (
+                    <g>
+                      {/* 下へ継続通過する縦線 */}
+                      <line
+                        x1={lx}
+                        y1="0"
+                        x2={lx}
+                        y2="100%"
+                        stroke={laneColor}
+                        stroke-width="2"
+                      />
+                      {/* 合流先へのマージ曲線 */}
+                      <path
+                        d={`M ${lx} 0 C ${lx} 14, ${toX} 10, ${toX} 22`}
+                        fill="none"
+                        stroke={colorHex.purple}
+                        stroke-width="2"
+                      />
+                    </g>
+                  );
+                }
+
+                // E: 通常の通過レーン (上から下までストレートに並行通過)
+                const isTerminating = isLast && item.commitLane === laneIdx;
+                return (
+                  <line
+                    x1={lx}
+                    y1="0"
+                    x2={lx}
+                    y2={isTerminating ? '22' : '100%'}
+                    stroke={laneColor}
+                    stroke-width="2"
+                  />
+                );
+              })}
+
+              {/* 2. コミットノードの描画 (commitLane の位置) */}
+              {item.isPrMerge ? (
+                <g>
+                  <circle
+                    cx={commitX}
+                    cy="22"
+                    r="6.5"
+                    fill="#0d1117"
+                    stroke={colorHex.purple}
+                    stroke-width="2.5"
+                  />
+                  <circle cx={commitX} cy="22" r="2.5" fill={colorHex.purple} />
+                </g>
               ) : (
-                <span
-                  class:list={[
-                    'size-2.5 rounded-full border transition-all duration-200 group-hover:scale-125',
-                    style.dot,
-                  ]}
+                <circle
+                  cx={commitX}
+                  cy="22"
+                  r="4.5"
+                  fill="#0d1117"
+                  stroke={commitColor}
+                  stroke-width="2"
                 />
               )}
-            </div>
+            </svg>
+          </div>
 
+          {/* ----------------------------------------------------------- */}
+          {/* モバイル用: レスポンシブ適応型 1本ライン + ノード           */}
+          {/* ----------------------------------------------------------- */}
+          <div
+            class="sm:hidden absolute left-2 inset-y-0 w-px bg-border-subtle"
+            aria-hidden="true"
+          />
+          <div
+            class="sm:hidden absolute left-2 top-4 size-2.5 -translate-x-1/2 rounded-full border border-canvas shadow-sm"
+            style={{
+              backgroundColor: item.isPrMerge ? colorHex.purple : commitColor,
+            }}
+            aria-hidden="true"
+          />
+
+          {/* ----------------------------------------------------------- */}
+          {/* コミットカード本体 (アコーディオン)                         */}
+          {/* ----------------------------------------------------------- */}
+          <div class="min-w-0 flex-1 pl-6 sm:pl-2">
             <details
               open={item.isDefaultOpen}
               class:list={[
                 'rounded-lg border bg-surface transition-colors',
                 item.isPrMerge
-                  ? 'border-accent-purple/40 bg-surface/90 shadow-[0_0_12px_rgba(188,140,255,0.04)]'
+                  ? 'border-accent-purple/40 bg-surface/90 shadow-[0_0_12px_rgba(188,140,255,0.06)]'
                   : 'border-border-subtle hover:border-border-strong',
               ]}
             >
+              <!-- 1行のサマリーヘッダー (クリックで開閉)。 -->
               <summary class="flex cursor-pointer items-center justify-between gap-3 p-3.5 select-none sm:p-4 [&::-webkit-details-marker]:hidden">
                 <div class="flex min-w-0 flex-1 flex-wrap items-center gap-2 font-mono text-xs">
+                  {/* PRマージバッジ または コミットハッシュ */}
                   {item.isPrMerge ? (
                     <span class="rounded bg-accent-purple/20 px-2 py-0.5 font-bold text-accent-purple">
                       PR #{item.prNumber} MERGED
@@ -117,17 +242,36 @@ const branchAccentStyles = {
                       {item.hash}
                     </span>
                   )}
+
+                  {/* タイムスタンプ */}
                   <span class="text-text-muted text-[11px] sm:text-xs">
                     {item.timestamp}
                   </span>
+
+                  {/* 所属ブランチバッジ (Gitブランチアイコン風) */}
                   <span
                     class:list={[
-                      'rounded border px-1.5 py-0.2 text-[10px] font-semibold tracking-wider',
+                      'inline-flex items-center gap-1 rounded border px-2 py-0.5 text-[10px] font-semibold tracking-wider',
                       style.badge,
                     ]}
                   >
-                    {item.branch}
+                    <svg
+                      class="size-2.5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M7 7a2 2 0 100-4 2 2 0 000 4zm0 14a2 2 0 100-4 2 2 0 000 4zm10-7a2 2 0 100-4 2 2 0 000 4zM7 7v10m0-6c3 0 6 1 6 3v0"
+                      />
+                    </svg>
+                    <span>{item.branch}</span>
                   </span>
+
+                  {/* コミットメッセージ */}
                   <span
                     class:list={[
                       'truncate font-semibold',
@@ -140,12 +284,15 @@ const branchAccentStyles = {
                   </span>
                 </div>
 
+                {/* 展開インジケーター矢印 */}
                 <div class="flex shrink-0 items-center text-text-muted transition-transform duration-200 group-open:rotate-90">
                   <span class="font-mono text-xs">▸</span>
                 </div>
               </summary>
 
+              <!-- アコーディオン詳細ボディ -->
               <div class="space-y-4 border-t border-border-subtle/60 p-4 pt-3 text-xs sm:p-6 sm:text-sm">
+                {/* 日本語タイトル */}
                 <div class="space-y-1">
                   <h3 class="text-sm font-bold text-text-primary sm:text-base">
                     {item.title}
@@ -157,44 +304,330 @@ const branchAccentStyles = {
                   )}
                 </div>
 
-                {item.closedIssue && (
-                  <div class="flex items-start gap-2 rounded border border-accent-coral/30 bg-accent-coral/5 p-2.5 font-mono text-xs">
-                    <span class="rounded bg-accent-coral/20 px-1.5 py-0.5 text-[10px] font-bold text-accent-coral shrink-0">
-                      RESOLVED ISSUE #{item.closedIssue.number}
-                    </span>
-                    <span class="text-text-secondary leading-relaxed">
-                      {item.closedIssue.title}
-                    </span>
+                {/* 背景・詳細 (Context) */}
+                <div class="space-y-3 leading-relaxed text-text-secondary">
+                  <div>
+                    <div class="mt-1 space-y-2">
+                      {splitContext(item.context).map((segment) => {
+                        if (segment.type === 'text') {
+                          return (
+                            <p class="whitespace-pre-line leading-relaxed">
+                              {tokenizeInline(segment.content).map((token) => {
+                                if (token.type === 'link') {
+                                  return (
+                                    <a
+                                      href={token.href}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      class="text-accent-cyan underline underline-offset-2 hover:opacity-80"
+                                    >
+                                      {token.content}
+                                    </a>
+                                  );
+                                }
+                                if (token.type === 'code') {
+                                  return (
+                                    <code class="rounded border border-border-subtle bg-surface-subtle px-1.5 py-0.5 font-mono text-[11px] text-accent-cyan">
+                                      {token.content}
+                                    </code>
+                                  );
+                                }
+                                return token.content;
+                              })}
+                            </p>
+                          );
+                        }
+                        if (segment.type === 'mermaid') {
+                          return (
+                            <div class="my-3 max-w-140 overflow-hidden rounded border border-border-subtle bg-surface-subtle p-10">
+                              <div
+                                class="mermaid-container flex justify-center opacity-0 transition-opacity duration-300"
+                                data-mermaid={segment.content}
+                              />
+                              <div class="mermaid-placeholder flex items-center justify-center py-6 font-mono text-xs text-text-muted">
+                                <span class="inline-block size-2 animate-pulse rounded-full bg-accent-cyan mr-2" />
+                                チャートを読み込み中...
+                              </div>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                {/* GitHub風コメントセクション */}
+                {item.comments && item.comments.length > 0 && (
+                  <div class="space-y-2.5 pt-3 border-t border-border-subtle/50">
+                    {/* セクションタイトル: Comments (件数) */}
+                    <div class="flex items-center gap-1.5 font-sans">
+                      <span class="text-xs font-semibold text-text-primary">
+                        Comments
+                      </span>
+                      <span class="inline-flex items-center justify-center rounded-full bg-surface-subtle border border-border-subtle px-1.5 py-0.2 text-[10px] font-mono font-medium text-text-muted">
+                        {item.comments.length}
+                      </span>
+                    </div>
+
+                    {/* コメントカード一覧 */}
+                    <div class="space-y-3">
+                      {item.comments.map((comment) => {
+                        const author = comment.author || 'MI-1222';
+                        const commentIdenticon = getIdenticonData(author);
+                        const commentTime = comment.timestamp || item.timestamp;
+                        const commentBadge = comment.badge || 'Author';
+
+                        return (
+                          <div class="rounded-md border border-border-subtle bg-surface overflow-hidden shadow-xs">
+                            {/* コメントヘッダー (GitHubデザイン) */}
+                            <div class="flex items-center justify-between border-b border-border-subtle bg-surface-subtle/70 px-3 py-1.5 text-xs">
+                              <div class="flex items-center gap-2">
+                                {/* 幾何学Identiconアバター */}
+                                <svg
+                                  class="size-4.5 rounded-full overflow-hidden shrink-0 border border-border-subtle/40"
+                                  viewBox="0 0 20 20"
+                                  aria-hidden="true"
+                                >
+                                  <rect
+                                    width="20"
+                                    height="20"
+                                    fill={commentIdenticon.bgColor}
+                                  />
+                                  {commentIdenticon.cells.map(([col, row]) => (
+                                    <rect
+                                      x={col * 4}
+                                      y={row * 4}
+                                      width="4"
+                                      height="4"
+                                      fill={commentIdenticon.fgColor}
+                                    />
+                                  ))}
+                                </svg>
+                                {/* ユーザー名 & 投稿日付 */}
+                                <span class="font-semibold text-text-primary">
+                                  {author}
+                                </span>
+                                <span class="text-[11px] text-text-muted font-mono">
+                                  {commentTime}
+                                </span>
+                              </div>
+
+                              <div class="flex items-center gap-2">
+                                {/* Author バッジ */}
+                                <span class="rounded-full border border-border-subtle px-2 py-0.5 text-[10px] font-medium text-text-muted">
+                                  {commentBadge}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* コメント本文 */}
+                            <div class="p-3 text-xs leading-relaxed text-text-secondary space-y-2 font-sans">
+                              {parseCommentBlocks(comment.body).map((block) => {
+                                if (block.type === 'list') {
+                                  return (
+                                    <ul class="list-disc pl-5 space-y-1 marker:text-text-muted">
+                                      {block.lines.map((line) => (
+                                        <li>
+                                          {tokenizeInline(line).map((token) => {
+                                            if (token.type === 'link') {
+                                              return (
+                                                <a
+                                                  href={token.href}
+                                                  target="_blank"
+                                                  rel="noopener noreferrer"
+                                                  class="text-accent-cyan underline underline-offset-2 hover:opacity-80"
+                                                >
+                                                  {token.content}
+                                                </a>
+                                              );
+                                            }
+                                            if (token.type === 'code') {
+                                              return (
+                                                <code class="rounded border border-border-subtle bg-surface-subtle px-1.5 py-0.5 font-mono text-[11px] text-accent-cyan">
+                                                  {token.content}
+                                                </code>
+                                              );
+                                            }
+                                            return token.content;
+                                          })}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  );
+                                }
+                                if (block.type === 'quote') {
+                                  return (
+                                    <blockquote class="border-l-3 border-accent-blue/60 bg-accent-blue/5 py-1.5 pl-3 rounded-r text-text-secondary my-1.5">
+                                      {block.lines.map((line) => (
+                                        <p class="leading-relaxed">
+                                          {tokenizeInline(line).map((token) => {
+                                            if (token.type === 'link') {
+                                              return (
+                                                <a
+                                                  href={token.href}
+                                                  target="_blank"
+                                                  rel="noopener noreferrer"
+                                                  class="text-accent-cyan underline underline-offset-2 hover:opacity-80"
+                                                >
+                                                  {token.content}
+                                                </a>
+                                              );
+                                            }
+                                            if (token.type === 'code') {
+                                              return (
+                                                <code class="rounded border border-border-subtle bg-surface-subtle px-1.5 py-0.5 font-mono text-[11px] text-accent-cyan">
+                                                  {token.content}
+                                                </code>
+                                              );
+                                            }
+                                            return token.content;
+                                          })}
+                                        </p>
+                                      ))}
+                                    </blockquote>
+                                  );
+                                }
+                                return (
+                                  <p class="whitespace-pre-line leading-relaxed">
+                                    {block.lines.map((line) => (
+                                      <span>
+                                        {tokenizeInline(line).map((token) => {
+                                          if (token.type === 'link') {
+                                            return (
+                                              <a
+                                                href={token.href}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                class="text-accent-cyan underline underline-offset-2 hover:opacity-80"
+                                              >
+                                                {token.content}
+                                              </a>
+                                            );
+                                          }
+                                          if (token.type === 'code') {
+                                            return (
+                                              <code class="rounded border border-border-subtle bg-surface-subtle px-1.5 py-0.5 font-mono text-[11px] text-accent-cyan">
+                                                {token.content}
+                                              </code>
+                                            );
+                                          }
+                                          return token.content;
+                                        })}
+                                      </span>
+                                    ))}
+                                  </p>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
-
-                <div class="space-y-2 leading-relaxed text-text-secondary">
-                  <div>
-                    <strong class="font-mono text-[11px] text-text-muted uppercase">
-                      Context:{' '}
-                    </strong>
-                    <span>{item.context}</span>
-                  </div>
-                  <div>
-                    <strong class="font-mono text-[11px] text-accent-cyan uppercase">
-                      Achievement:{' '}
-                    </strong>
-                    <span>{item.achievement}</span>
-                  </div>
-                </div>
-
-                <div class="flex flex-wrap gap-1.5 pt-2 border-t border-border-subtle/40">
-                  {item.tags.map((tag) => (
-                    <span class="rounded border border-border-subtle bg-surface-subtle px-2 py-0.5 font-mono text-[11px] text-text-muted">
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
               </div>
             </details>
           </div>
-        );
-      })}
-    </div>
+        </div>
+      );
+    })}
   </div>
 </section>
+
+<script>
+  let mermaidLoaded = false;
+  let mermaidModule: (typeof import('mermaid'))['default'] | null = null;
+  let chartCounter = 0;
+
+  /**
+   * Mermaidライブラリを遅延ロードし初期化する。
+   */
+  const loadMermaid = async () => {
+    if (!mermaidLoaded) {
+      const { default: mermaid } = await import('mermaid');
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: 'dark',
+        themeVariables: {
+          darkMode: true,
+          background: 'transparent',
+          mainBkg: '#161b22',
+          textColor: '#e6edf3',
+          primaryColor: '#1f2937',
+          primaryTextColor: '#e6edf3',
+          lineColor: '#56d4dd',
+          fontFamily: 'inherit',
+        },
+        securityLevel: 'loose',
+      });
+      mermaidModule = mermaid;
+      mermaidLoaded = true;
+    }
+    return mermaidModule;
+  };
+
+  /**
+   * 指定コンテナ内の未描画Mermaid要素を描画する。
+   *
+   * @param container 親要素。
+   */
+  const renderMermaidInContainer = async (container: Element) => {
+    const targets = container.querySelectorAll<HTMLElement>(
+      '.mermaid-container:not([data-rendered])',
+    );
+    if (targets.length === 0) return;
+
+    const mermaid = await loadMermaid();
+    if (!mermaid) return;
+
+    for (const target of targets) {
+      const code = target.dataset.mermaid;
+      if (!code) continue;
+
+      target.setAttribute('data-rendered', 'true');
+      const chartId = `mermaid-chart-${chartCounter++}`;
+
+      try {
+        const { svg } = await mermaid.render(chartId, code);
+        target.innerHTML = svg;
+        target.classList.remove('opacity-0');
+        const placeholder = target.nextElementSibling;
+        if (
+          placeholder &&
+          placeholder.classList.contains('mermaid-placeholder')
+        ) {
+          placeholder.remove();
+        }
+      } catch (error) {
+        console.error('Mermaid render error:', error);
+        target.innerHTML = `<pre class="font-mono text-xs text-accent-coral whitespace-pre-wrap">${code}</pre>`;
+        target.classList.remove('opacity-0');
+        const placeholder = target.nextElementSibling;
+        if (
+          placeholder &&
+          placeholder.classList.contains('mermaid-placeholder')
+        ) {
+          placeholder.remove();
+        }
+      }
+    }
+  };
+
+  // 初期状態で開いている details 内の描画を実行。
+  document.querySelectorAll('details[open]').forEach((details) => {
+    renderMermaidInContainer(details);
+  });
+
+  // details が開かれたときのイベントリスナーを設定。
+  document.addEventListener(
+    'toggle',
+    (event) => {
+      const target = event.target as HTMLDetailsElement;
+      if (target && target.tagName === 'DETAILS' && target.open) {
+        renderMermaidInContainer(target);
+      }
+    },
+    true,
+  );
+</script>
