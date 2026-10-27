@@ -16,6 +16,7 @@ out/
 coverage/
 .cache/
 .astro/
+.wrangler/
 
 # Minified assets
 *.min.js

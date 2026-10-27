@@ -4,7 +4,7 @@ import tseslint from 'typescript-eslint';
 
 export default [
   {
-    ignores: ['dist/**', '.astro/**', '.agent/**', '.local/**'],
+    ignores: ['dist/**', '.astro/**', '.agent/**', '.local/**', '.wrangler/**'],
   },
 
   // TypeScriptの推奨ルール。
