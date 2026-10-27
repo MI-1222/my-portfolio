@@ -5,6 +5,10 @@
  */
 import Container from './Container.astro';
 import ThemeToggle from './ThemeToggle.astro';
+
+const currentPath = Astro.url.pathname;
+const isHistoryActive =
+  currentPath === '/history' || currentPath === '/history/';
 ---
 
 <header class="sticky top-0 z-40 w-full border-b border-border-subtle bg-canvas/80 backdrop-blur-md transition-colors">
@@ -40,10 +44,15 @@ import ThemeToggle from './ThemeToggle.astro';
         Works
       </a>
       <a
-        href="/about"
-        class="rounded-md px-2.5 py-1.5 font-mono text-xs text-text-secondary transition-colors hover:bg-surface hover:text-text-primary sm:text-sm"
+        href="/history"
+        class:list={[
+          'rounded-md px-2.5 py-1.5 font-mono text-xs transition-colors sm:text-sm',
+          isHistoryActive
+            ? 'border border-border-subtle bg-surface font-semibold text-accent-cyan'
+            : 'text-text-secondary hover:bg-surface hover:text-text-primary',
+        ]}
       >
-        About
+        History
       </a>
 
       <!-- 境界仕切り線。 -->

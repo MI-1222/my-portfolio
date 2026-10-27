@@ -1,0 +1,79 @@
+---
+/**
+ * 開発・経歴タイムラインページ(/history)。
+ * 重複セクションを排除し、Commit History & Pull Requests に完全特化して提示する。
+ */
+import JourneyTimeline from '../../components/history/JourneyTimeline.astro';
+import Container from '../../components/common/Container.astro';
+import Layout from '../../layouts/Layout.astro';
+import { historyProfile } from '../../data/history';
+---
+
+<Layout
+  title="History | MI-1222 - Commit History & Pull Requests"
+  description="東京科学大学(旧 東京工業大学)在学。知的好奇心と自走力による学習・開発・探求の全コミット履歴とPull Requestグラフ。"
+>
+  <Container size="default" class="py-10 sm:py-16">
+    <!-- トップへの戻りリンク。 -->
+    <div class="mb-6">
+      <a
+        href="/"
+        class="inline-flex items-center gap-1.5 font-mono text-xs text-text-muted transition-colors hover:text-accent-cyan"
+      >
+        <span>←</span>
+        <span>Back to Home</span>
+      </a>
+    </div>
+
+    <!-- ページヘッダー (HUDメタデータ & タイトル)。 -->
+    <header class="space-y-4 border-b border-border-subtle pb-8">
+      <div class="flex flex-wrap items-center justify-between gap-3 font-mono text-xs">
+        <div class="flex items-center gap-2 text-accent-green">
+          <span>01 //</span>
+          <span>GIT EXECUTION TRACE</span>
+        </div>
+
+        <!-- ステータスインジケーター。 -->
+        <div class="inline-flex items-center gap-2 rounded-full border border-border-subtle bg-surface/80 px-2.5 py-1 text-text-secondary">
+          <span class="relative flex size-2">
+            <span class="absolute inline-flex size-full animate-ping rounded-full bg-accent-green opacity-75"></span>
+            <span class="relative inline-flex size-2 rounded-full bg-accent-green"></span>
+          </span>
+          <span class="text-[11px]">{historyProfile.systemStatus}</span>
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <h1 class="text-3xl font-extrabold tracking-tight text-text-primary sm:text-4xl">
+          Commit History &amp; Pull Requests
+        </h1>
+        <p class="max-w-3xl text-sm leading-relaxed text-text-secondary sm:text-base">
+          自律精神と数学的土台の構築から、Web・TeX自動化、高度IT資格、そして先進低レイヤ・計算基盤・形式検証への深化に至る全コミットとPull
+          Requestの実行トレース。
+        </p>
+      </div>
+
+      <!-- 基本スペックバッジ。 -->
+      <div class="flex flex-wrap gap-2 pt-2 font-mono text-xs">
+        <span class="rounded border border-border-subtle bg-surface px-2.5 py-1 text-text-secondary">
+          SYS.ID:{' '}
+          <strong class="text-text-primary">{historyProfile.handle}</strong>
+        </span>
+        <span class="rounded border border-border-subtle bg-surface px-2.5 py-1 text-text-secondary">
+          AFFILIATION:{' '}
+          <span class="text-text-primary">{historyProfile.affiliation}</span>
+        </span>
+        {historyProfile.credentials.map((cred) => (
+          <span class="rounded border border-border-subtle bg-surface px-2.5 py-1 text-accent-green">
+            CERT: {cred}
+          </span>
+        ))}
+      </div>
+    </header>
+
+    <!-- コミット履歴 & PRグラフ。 -->
+    <main>
+      <JourneyTimeline />
+    </main>
+  </Container>
+</Layout>
