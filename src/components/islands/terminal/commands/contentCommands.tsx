@@ -90,11 +90,11 @@ export const contentCommands: CommandDefinition[] = [
                 <span class="text-sm font-bold text-accent-cyan">
                   {found.title}
                 </span>
-                <span class="py-0.2 rounded border border-border-subtle px-1.5 font-mono text-[10px] text-text-muted uppercase">
+                <span class="rounded border border-border-subtle px-1.5 py-0.5 font-mono text-[10px] text-text-muted uppercase">
                   {found.status}
                 </span>
                 {found.featured && (
-                  <span class="py-0.2 bg-accent-orange/10 border-accent-orange/30 text-accent-orange rounded border px-1.5 font-mono text-[10px]">
+                  <span class="border-accent-orange/30 bg-accent-orange/10 text-accent-orange rounded border px-1.5 py-0.5 font-mono text-[10px]">
                     Featured
                   </span>
                 )}
@@ -199,7 +199,7 @@ export const contentCommands: CommandDefinition[] = [
                       {item.title}
                     </button>
                     {item.featured && (
-                      <span class="py-0.2 bg-accent-orange/10 text-accent-orange border-accent-orange/20 rounded border px-1 text-[9px]">
+                      <span class="border-accent-orange/20 bg-accent-orange/10 text-accent-orange rounded border px-1 py-0.5 text-[9px]">
                         Top
                       </span>
                     )}
