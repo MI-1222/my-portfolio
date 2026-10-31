@@ -24,6 +24,12 @@ function scrambleText(
   const length = targetText.length;
   const progressObj = { value: 0 };
 
+  // CLS(レイアウトシフト)を完全に防ぐため、初期確定幅を固定する。
+  const initialWidth = element.getBoundingClientRect().width;
+  if (initialWidth > 0) {
+    element.style.minWidth = `${initialWidth}px`;
+  }
+
   gsap.to(progressObj, {
     value: 1,
     duration,
@@ -47,6 +53,7 @@ function scrambleText(
     },
     onComplete: () => {
       element.textContent = targetText;
+      element.style.minWidth = '';
     },
   });
 }

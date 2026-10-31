@@ -18,31 +18,31 @@ import Container from '../common/Container.astro';
 
   <Container size="default">
     <div class="flex flex-col items-start gap-8">
-      <!-- 1. HUD システムパラメータ行 (等幅フォント)。 -->
+      <!-- 1. HUD システムパラメータ行 (等幅フォント・CLS防止インラインブロック)。 -->
       <div
         class="flex flex-wrap items-center gap-2 font-mono text-[11px] text-text-muted"
         aria-label="システムステータス情報"
       >
         <span
-          class="rounded border border-border-subtle bg-surface/80 px-2 py-0.5 text-accent-cyan"
+          class="inline-block rounded border border-border-subtle bg-surface/80 px-2 py-0.5 text-accent-cyan tabular-nums"
           data-animate="hud-item"
         >
           [SYS.ID: MI-1222]
         </span>
         <span
-          class="rounded border border-border-subtle bg-surface/80 px-2 py-0.5"
+          class="inline-block rounded border border-border-subtle bg-surface/80 px-2 py-0.5 tabular-nums"
           data-animate="hud-item"
         >
           [LOC: TOKYO 35.7°N, 139.7°E]
         </span>
         <span
-          class="hidden rounded border border-border-subtle bg-surface/80 px-2 py-0.5 sm:inline"
+          class="hidden sm:inline-block rounded border border-border-subtle bg-surface/80 px-2 py-0.5 tabular-nums"
           data-animate="hud-item"
         >
           [CORE: RUST / GO / TS / LEAN 4]
         </span>
         <span
-          class="rounded border border-border-subtle bg-surface/80 px-2 py-0.5 text-accent-green"
+          class="inline-block rounded border border-border-subtle bg-surface/80 px-2 py-0.5 text-accent-green tabular-nums"
           data-animate="hud-item"
         >
           [STATUS: 200 OK]
