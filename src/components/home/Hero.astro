@@ -6,7 +6,10 @@
 import Container from '../common/Container.astro';
 ---
 
-<section class="relative overflow-hidden border-b border-border-subtle py-16 sm:py-24">
+<section
+  class="relative overflow-hidden border-b border-border-subtle py-16 sm:py-24"
+  data-animate="hero-container"
+>
   <!-- サイバードットマトリクス背景 (Pure CSS)。 -->
   <div
     class="pointer-events-none absolute inset-0 -z-10 opacity-30 bg-[radial-gradient(var(--color-border-subtle)_1px,transparent_1px)] bg-size-[24px_24px]"
@@ -15,26 +18,38 @@ import Container from '../common/Container.astro';
 
   <Container size="default">
     <div class="flex flex-col items-start gap-8">
-      <!-- 1. HUD システムパラメータ行 (等幅フォント)。 -->
+      <!-- 1. HUD システムパラメータ行 (等幅フォント・CLS防止インラインブロック)。 -->
       <div
         class="flex flex-wrap items-center gap-2 font-mono text-[11px] text-text-muted"
         aria-label="システムステータス情報"
       >
-        <span class="rounded border border-border-subtle bg-surface/80 px-2 py-0.5 text-accent-cyan">
+        <span
+          class="inline-block rounded border border-border-subtle bg-surface/80 px-2 py-0.5 text-accent-cyan tabular-nums"
+          data-animate="hud-item"
+        >
           [SYS.ID: MI-1222]
         </span>
-        <span class="rounded border border-border-subtle bg-surface/80 px-2 py-0.5">
+        <span
+          class="inline-block rounded border border-border-subtle bg-surface/80 px-2 py-0.5 tabular-nums"
+          data-animate="hud-item"
+        >
           [LOC: TOKYO 35.7°N, 139.7°E]
         </span>
-        <span class="hidden rounded border border-border-subtle bg-surface/80 px-2 py-0.5 sm:inline">
+        <span
+          class="hidden sm:inline-block rounded border border-border-subtle bg-surface/80 px-2 py-0.5 tabular-nums"
+          data-animate="hud-item"
+        >
           [CORE: RUST / GO / TS / LEAN 4]
         </span>
-        <span class="rounded border border-border-subtle bg-surface/80 px-2 py-0.5 text-accent-green">
+        <span
+          class="inline-block rounded border border-border-subtle bg-surface/80 px-2 py-0.5 text-accent-green tabular-nums"
+          data-animate="hud-item"
+        >
           [STATUS: 200 OK]
         </span>
       </div>
 
-      <!-- 2. タイトル & 専門領域見出し。 -->
+      <!-- 2. タイトル & 専門領域見出し。LCP防衛のためアニメーション属性を付与せず即時確定する。 -->
       <div class="space-y-3">
         <h1 class="text-3xl font-extrabold tracking-tight text-text-primary sm:text-5xl lg:text-6xl">
           MI-1222
@@ -45,7 +60,10 @@ import Container from '../common/Container.astro';
       </div>
 
       <!-- 3. 静的疑似ターミナルプロンプト (Zero JS / CSS 点滅カーソル)。 -->
-      <div class="w-full max-w-2xl rounded-lg border border-border-subtle bg-surface p-4 font-mono text-xs sm:text-sm text-text-secondary shadow-sm">
+      <div
+        class="w-full max-w-2xl rounded-lg border border-border-subtle bg-surface p-4 font-mono text-xs sm:text-sm text-text-secondary shadow-sm"
+        data-animate="hero-terminal"
+      >
         <div class="mb-3 flex items-center gap-2 border-b border-border-subtle pb-2 text-[11px] text-text-muted">
           <span class="inline-block size-2.5 rounded-full bg-border-strong"></span>
           <span class="inline-block size-2.5 rounded-full bg-border-strong"></span>
@@ -89,28 +107,49 @@ import Container from '../common/Container.astro';
 
       <!-- 5. 主要技術スタックタグ。 -->
       <div class="flex flex-wrap items-center gap-2 font-mono text-xs">
-        <span class="rounded-md border border-accent-coral/30 bg-accent-coral/10 px-2.5 py-1 text-accent-coral">
+        <span
+          class="rounded-md border border-accent-coral/30 bg-accent-coral/10 px-2.5 py-1 text-accent-coral"
+          data-animate="hero-tag"
+        >
           # Rust
         </span>
-        <span class="rounded-md border border-accent-cyan/30 bg-accent-cyan/10 px-2.5 py-1 text-accent-cyan">
+        <span
+          class="rounded-md border border-accent-cyan/30 bg-accent-cyan/10 px-2.5 py-1 text-accent-cyan"
+          data-animate="hero-tag"
+        >
           # Go
         </span>
-        <span class="rounded-md border border-accent-green/30 bg-accent-green/10 px-2.5 py-1 text-accent-green">
+        <span
+          class="rounded-md border border-accent-green/30 bg-accent-green/10 px-2.5 py-1 text-accent-green"
+          data-animate="hero-tag"
+        >
           # TypeScript
         </span>
-        <span class="rounded-md border border-accent-purple/30 bg-accent-purple/10 px-2.5 py-1 text-accent-purple">
+        <span
+          class="rounded-md border border-accent-purple/30 bg-accent-purple/10 px-2.5 py-1 text-accent-purple"
+          data-animate="hero-tag"
+        >
           # Lean 4
         </span>
-        <span class="rounded-md border border-border-subtle bg-surface px-2.5 py-1 text-text-muted">
+        <span
+          class="rounded-md border border-border-subtle bg-surface px-2.5 py-1 text-text-muted"
+          data-animate="hero-tag"
+        >
           # Cloud Run
         </span>
-        <span class="rounded-md border border-border-subtle bg-surface px-2.5 py-1 text-text-muted">
+        <span
+          class="rounded-md border border-border-subtle bg-surface px-2.5 py-1 text-text-muted"
+          data-animate="hero-tag"
+        >
           # Cloudflare
         </span>
       </div>
 
       <!-- 6. アクションボタン群。 -->
-      <div class="flex flex-wrap items-center gap-4 pt-2">
+      <div
+        class="flex flex-wrap items-center gap-4 pt-2"
+        data-animate="hero-actions"
+      >
         <a
           href="#works"
           class="group inline-flex items-center gap-2 rounded-lg bg-text-primary px-5 py-2.5 font-mono text-sm font-semibold text-canvas transition-opacity hover:opacity-90"
@@ -121,10 +160,10 @@ import Container from '../common/Container.astro';
           </span>
         </a>
         <a
-          href="/about"
+          href="/history"
           class="inline-flex items-center gap-2 rounded-lg border border-border-subtle bg-surface px-5 py-2.5 font-mono text-sm font-medium text-text-primary transition-colors hover:border-border-strong hover:bg-surface-subtle"
         >
-          <span>View Career / About</span>
+          <span>View Career / History</span>
           <span>→</span>
         </a>
       </div>

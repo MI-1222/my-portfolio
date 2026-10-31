@@ -56,11 +56,13 @@ import { categories, projects } from '../../data/projects';
         <div
           class="work-card-wrapper transition-all duration-200"
           data-project-category={project.category}
+          data-animate="work-card"
         >
           <Card
             as="article"
             interactive={true}
             accent={project.accent}
+            dataAnimate="card"
             class:list={[
               'relative flex h-full flex-col justify-between p-5',
               !project.link && 'cursor-default!',
@@ -160,7 +162,7 @@ import { categories, projects } from '../../data/projects';
 <script>
   /**
    * 制作物グリッドのタブフィルタ機能を初期化する。
-   * AstroのView Transitions(astro:page-load)に対応。
+   * タブ切り替え時にカードの表示状態を更新し、`layout-change` イベントを発行して `ScrollTrigger` の位置再計算を促す。
    */
   function setupWorksFilter(): void {
     const tabs = document.querySelectorAll<HTMLButtonElement>('.filter-tab');
@@ -177,7 +179,6 @@ import { categories, projects } from '../../data/projects';
           return;
         }
 
-        // タブのアクティブスタイルを更新。
         tabs.forEach((t) => {
           const isActive = t === tab;
           t.setAttribute('aria-selected', isActive ? 'true' : 'false');
@@ -190,7 +191,6 @@ import { categories, projects } from '../../data/projects';
           }
         });
 
-        // カードのフィルタリングを実行。
         cards.forEach((card) => {
           const category = card.getAttribute('data-project-category');
           if (filter === 'all' || category === filter) {
@@ -199,6 +199,10 @@ import { categories, projects } from '../../data/projects';
             card.classList.add('hidden');
           }
         });
+
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('layout-change'));
+        }
       });
     });
   }
