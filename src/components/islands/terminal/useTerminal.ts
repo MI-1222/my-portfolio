@@ -159,12 +159,21 @@ export function useTerminal() {
       }
     };
 
+    /** ページ遷移前のクローズ処理を行う。 */
+    const handleBeforeSwap = (): void => {
+      closeTerminal();
+      document.body.style.overflow = '';
+    };
+
     window.addEventListener('open-terminal', handleOpenEvent);
     window.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('astro:before-swap', handleBeforeSwap);
 
     return () => {
       window.removeEventListener('open-terminal', handleOpenEvent);
       window.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('astro:before-swap', handleBeforeSwap);
+      document.body.style.overflow = '';
     };
   }, [isOpen, openTerminal, closeTerminal]);
 
