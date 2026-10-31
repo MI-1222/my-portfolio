@@ -98,7 +98,6 @@
   --mouse-y: -9999px;
   --glow-color: var(--color-accent-cyan);
   transform-style: preserve-3d;
-  will-change: transform;
 }
 
 .card-glow-container::before {
@@ -127,6 +126,10 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
+  .card-glow-container:hover {
+    will-change: transform;
+  }
+
   .card-glow-container:hover::before {
     opacity: 0.9;
   }
