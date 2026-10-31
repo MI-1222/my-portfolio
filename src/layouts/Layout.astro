@@ -6,6 +6,7 @@
 import { ClientRouter } from 'astro:transitions';
 import Header from '../components/common/Header.astro';
 import Footer from '../components/common/Footer.astro';
+import CommandPalette from '../components/islands/cmdk/CommandPalette';
 import '../styles/global.css';
 
 interface Props {
@@ -66,9 +67,7 @@ const {
       /** local storage に保存されているテーマ。 */
       const STORAGE_KEY = 'portfolio-theme';
 
-      /**
-       * DOMスワップ直後に保存済みテーマを再適用する。
-       */
+      /** DOM スワップ直後に保存済みテーマを再適用する。 */
       function restoreTheme(): void {
         try {
           const savedTheme = localStorage.getItem(STORAGE_KEY) || 'dark';
@@ -90,5 +89,6 @@ const {
       <slot />
     </main>
     {!hideFooter && <Footer />}
+    <CommandPalette client:idle transition:persist />
   </body>
 </html>

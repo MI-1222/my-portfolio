@@ -64,13 +64,12 @@ const isHistoryActive =
         <span class="hidden sm:inline">Term</span>
       </button>
 
-      <!-- Command Palette (⌘K) ボタン (今後実装予定)。 -->
       <button
         type="button"
         id="btn-cmdk-trigger"
         class="hidden h-9 items-center gap-1 rounded-md border border-border-subtle bg-surface px-2 font-mono text-xs text-text-muted transition-colors hover:border-border-strong hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-accent-cyan/30 sm:inline-flex"
-        aria-label="クイック検索コマンドパレット(準備中)"
-        title="Quick Search (Coming Soon)"
+        aria-label="コマンドパレットを起動"
+        title="Quick Search (⌘K / Ctrl+K)"
       >
         <kbd class="font-sans font-medium text-text-secondary">⌘</kbd>
         <kbd class="font-sans font-medium text-text-secondary">K</kbd>
@@ -92,9 +91,7 @@ const isHistoryActive =
 </div>
 
 <script>
-  /**
-   * 開発中機能ボタンのクリック時に簡易トーストを表示する。
-   */
+  /** ヘッダーのアクションボタン(ターミナル・コマンドパレット等)のイベントリスナーを設定する。 */
   function setupFeatureTriggers(): void {
     const toast = document.getElementById('feature-toast');
     const toastMsg = document.getElementById('feature-toast-msg');
@@ -133,7 +130,7 @@ const isHistoryActive =
     });
 
     cmdkBtn?.addEventListener('click', () => {
-      showToast('⌘K Command Palette: Coming Soon');
+      window.dispatchEvent(new CustomEvent('open-cmdk'));
     });
   }
 
