@@ -5,6 +5,7 @@
  */
 import Container from './Container.astro';
 import ThemeToggle from './ThemeToggle.astro';
+import SystemStatus from '../islands/SystemStatus';
 
 const currentPath = Astro.url.pathname;
 const isHistoryActive =
@@ -25,14 +26,7 @@ const isHistoryActive =
         <span class="tracking-wider">MI-1222</span>
       </a>
 
-      <!-- システム稼働ステータス (HUDメタファー)。 -->
-      <div class="hidden items-center gap-1.5 rounded-full border border-border-subtle bg-surface/60 px-2 py-0.5 font-mono text-[11px] text-text-secondary sm:inline-flex">
-        <span class="relative flex size-2">
-          <span class="absolute inline-flex size-full animate-ping rounded-full bg-accent-green opacity-75"></span>
-          <span class="relative inline-flex size-2 rounded-full bg-accent-green"></span>
-        </span>
-        <span>SYS: NOMINAL</span>
-      </div>
+      <SystemStatus client:idle transition:persist />
     </div>
 
     <!-- 右側: ナビゲーションリンク, アクションボタン。 -->

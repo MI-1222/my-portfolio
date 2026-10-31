@@ -16,9 +16,11 @@
     "deploy": "wrangler deploy"
   },
   "dependencies": {
+    "@astrojs/preact": "^6.1.1",
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.3.8",
     "mermaid": "^12.2.0",
+    "preact": "^11.0.2",
     "tailwindcss": "^4.3.3"
   },
   "devDependencies": {
