@@ -51,7 +51,7 @@ const branchAccentStyles: Record<string, { badge: string }> = {
   </div>
 
   <!-- Git Graph タイムラインコンテナ。 -->
-  <div class="relative">
+  <div class="relative" data-animate="timeline-container">
     {timelineCommits.map((item, index) => {
       const style =
         branchAccentStyles[item.branchAccent] || branchAccentStyles.green;
@@ -60,7 +60,10 @@ const branchAccentStyles: Record<string, { badge: string }> = {
       const commitColor = colorHex[item.branchAccent] || colorHex.green;
 
       return (
-        <div class="relative flex items-stretch pb-5 group">
+        <div
+          class="relative flex items-stretch pb-5 group"
+          data-animate="timeline-row"
+        >
           {/* ----------------------------------------------------------- */}
           {/* デスクトップ用: マルチレーン SVG Git Graph (幅 126px)       */}
           {/* ----------------------------------------------------------- */}

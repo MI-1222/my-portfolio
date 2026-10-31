@@ -7,6 +7,7 @@ import {
 } from 'preact/hooks';
 import type { JSX, TargetedKeyboardEvent, TargetedMouseEvent } from 'preact';
 import { buildCommandItems, type CommandItem } from './commandItems';
+import { playClickSound, playKeySound } from '../../../scripts/motion/soundFX';
 
 /**
  * アイテムと検索語の一致判定を行う。
@@ -124,6 +125,7 @@ export default function CommandPalette(): JSX.Element | null {
 
   /** パレットを閉じる。 */
   const closePalette = useCallback((): void => {
+    playClickSound();
     setIsOpen(false);
     setQuery('');
     setSelectedIndex(0);
@@ -132,6 +134,7 @@ export default function CommandPalette(): JSX.Element | null {
 
   /** パレットを開く。 */
   const openPalette = useCallback((): void => {
+    playClickSound();
     setIsOpen(true);
     setSelectedIndex(0);
     document.body.style.overflow = 'hidden';
@@ -251,9 +254,11 @@ export default function CommandPalette(): JSX.Element | null {
 
     if (event.key === 'ArrowDown') {
       event.preventDefault();
+      playKeySound();
       setSelectedIndex((prev) => (prev + 1) % filteredItems.length);
     } else if (event.key === 'ArrowUp') {
       event.preventDefault();
+      playKeySound();
       setSelectedIndex(
         (prev) => (prev - 1 + filteredItems.length) % filteredItems.length,
       );
@@ -262,6 +267,7 @@ export default function CommandPalette(): JSX.Element | null {
         return;
       }
       event.preventDefault();
+      playClickSound();
       if (selectedItem) {
         selectedItem.action();
       }

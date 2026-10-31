@@ -24,6 +24,7 @@ const {
   ...rest
 } = Astro.props;
 
+/** 各アクセントカラーに対応するホバースタイルクラス。 */
 const accentHoverClasses: Record<NonNullable<Props['accent']>, string> = {
   cyan: 'hover:border-accent-cyan/50 hover:shadow-[0_0_15px_rgba(86,212,221,0.08)]',
   green:
@@ -34,15 +35,29 @@ const accentHoverClasses: Record<NonNullable<Props['accent']>, string> = {
     'hover:border-accent-purple/50 hover:shadow-[0_0_15px_rgba(188,140,255,0.08)]',
   none: '',
 };
+
+/** 各アクセントカラーに対応する境界線発光用の CSS 変数値。 */
+const accentGlowColors: Record<NonNullable<Props['accent']>, string> = {
+  cyan: 'var(--color-accent-cyan)',
+  green: 'var(--color-accent-green)',
+  coral: 'var(--color-accent-coral)',
+  purple: 'var(--color-accent-purple)',
+  none: 'var(--color-border-strong)',
+};
 ---
 
 <Tag
   class:list={[
     'rounded-lg border border-border-subtle bg-surface p-6 text-text-primary transition-colors duration-200',
-    interactive && ['cursor-pointer', accentHoverClasses[accent]],
+    interactive && [
+      'cursor-pointer card-glow-container',
+      accentHoverClasses[accent],
+    ],
     className,
   ]}
+  style={interactive ? { '--glow-color': accentGlowColors[accent] } : undefined}
   data-animate={dataAnimate}
+  data-glow={interactive ? 'true' : undefined}
   {...rest}
 >
   <slot />

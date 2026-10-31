@@ -1,5 +1,10 @@
 import { useEffect, useState } from 'preact/hooks';
 import type { JSX } from 'preact';
+import {
+  isAudioEnabled,
+  toggleSoundFX,
+  playClickSound,
+} from '../../scripts/motion/soundFX';
 
 /**
  * システム稼働ステータスを表示する Preact アイランド。
@@ -11,20 +16,49 @@ export default function SystemStatus(): JSX.Element {
   /** クライアント側でハイドレーションが完了したかを管理するフラグ。 */
   const [isHydrated, setIsHydrated] = useState(false);
 
-  /** 表示モードの管理値 (0: `NOMINAL`, 1: `ACTIVE`, 2: `LATENCY`)。 */
+  /** 表示モードの管理値 (0: `NOMINAL`, 1: `ACTIVE`, 2: `LATENCY`, 3: `AUDIO`)。 */
   const [mode, setMode] = useState<number>(0);
 
   /** 応答時間の擬似メトリクス (ミリ秒)。ハイドレーション完了後に 8〜16ms を算出する。 */
   const [latency, setLatency] = useState<number>(12);
 
+  /** 音響フィードバックが有効かどうかの状態フラグ。 */
+  const [audioActive, setAudioActive] = useState<boolean>(false);
+
   useEffect(() => {
     setIsHydrated(true);
     setLatency(Math.floor(Math.random() * 9) + 8);
+    setAudioActive(isAudioEnabled());
+
+    /** 音響設定のグローバル変更イベントを同期するリスナー。 */
+    const handleSoundToggle = (event: Event): void => {
+      const customEvent = event as CustomEvent<{ enabled: boolean }>;
+      if (customEvent.detail) {
+        setAudioActive(customEvent.detail.enabled);
+      }
+    };
+
+    window.addEventListener('sound-fx-toggle', handleSoundToggle);
+    return () => {
+      window.removeEventListener('sound-fx-toggle', handleSoundToggle);
+    };
   }, []);
 
-  /** クリック時に表示モードを順に切り替える。 */
+  /**
+   * クリック時に表示モードを順に切り替える。
+   * 音声モード(`mode === 3`)のときは音響状態を反転して初期モードへ戻す。
+   */
   const handleToggleMode = (): void => {
-    setMode((prev) => (prev + 1) % 3);
+    playClickSound();
+
+    if (mode === 3) {
+      const newState = toggleSoundFX();
+      setAudioActive(newState);
+      setMode(0);
+      return;
+    }
+
+    setMode((prev) => (prev + 1) % 4);
   };
 
   /**
@@ -39,7 +73,10 @@ export default function SystemStatus(): JSX.Element {
     if (mode === 1) {
       return 'SYS: ACTIVE';
     }
-    return `LATENCY: ${latency}ms`;
+    if (mode === 2) {
+      return `LATENCY: ${latency}ms`;
+    }
+    return `AUDIO: ${audioActive ? 'ON' : 'MUTE'}`;
   };
 
   return (

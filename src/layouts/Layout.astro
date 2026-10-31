@@ -80,6 +80,10 @@ const {
 
       document.addEventListener('astro:after-swap', restoreTheme);
     </script>
+    <script>
+      /** サイト全体のモーションおよびマイクロインタラクションを初期化する。 */
+      import '../scripts/motion/index';
+    </script>
   </head>
   <body
     id="top"

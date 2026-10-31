@@ -3,6 +3,7 @@ import type { TargetedKeyboardEvent } from 'preact';
 import { navigate } from 'astro:transitions/client';
 import type { TerminalLine, CommandContext } from './types';
 import { executeCommand, computeCompletion } from './commands/registry';
+import { playClickSound, playKeySound } from '../../../scripts/motion/soundFX';
 
 /** ログバッファの最大保持行数。 */
 const MAX_LOG_LINES = 200;
@@ -44,6 +45,7 @@ export function useTerminal() {
 
   /** ターミナルを閉じる。 */
   const closeTerminal = useCallback(() => {
+    playClickSound();
     setIsOpen(false);
   }, []);
 
@@ -99,6 +101,7 @@ export function useTerminal() {
 
   /** ターミナルを開く。 */
   const openTerminal = useCallback(() => {
+    playClickSound();
     window.dispatchEvent(new CustomEvent('close-cmdk'));
     setIsOpen(true);
     printWelcome();
@@ -212,6 +215,7 @@ export function useTerminal() {
       setHistory((prev) => [...prev, trimmed]);
       setHistoryIndex(-1);
       setInput('');
+      playClickSound();
 
       const context: CommandContext = {
         addLine,
@@ -257,6 +261,7 @@ export function useTerminal() {
       // Tab補完。
       if (e.key === 'Tab') {
         e.preventDefault();
+        playKeySound();
         if (isBusy || !input.trim()) {
           return;
         }
@@ -275,6 +280,7 @@ export function useTerminal() {
       // ↑キー (過去の履歴へ戻る)。
       if (e.key === 'ArrowUp') {
         e.preventDefault();
+        playKeySound();
         if (history.length === 0) {
           return;
         }
@@ -295,6 +301,7 @@ export function useTerminal() {
       // ↓キー (未来の履歴へ進む)。
       if (e.key === 'ArrowDown') {
         e.preventDefault();
+        playKeySound();
         if (historyIndex === -1) {
           return;
         }

@@ -88,3 +88,70 @@
 .disable-transitions * {
   transition: none !important;
 }
+
+/* -------------------------------------------------------------------------- */
+/* 5. Lenis 慣性スクロール最適化設定。                                             */
+/* -------------------------------------------------------------------------- */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
+}
+
+/* -------------------------------------------------------------------------- */
+/* 6. サイバーミニマル マウス追従 Border Glow & 3D Tilt 基盤。                     */
+/* -------------------------------------------------------------------------- */
+.card-glow-container {
+  position: relative;
+  --mouse-x: -9999px;
+  --mouse-y: -9999px;
+  --glow-color: var(--color-accent-cyan);
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.card-glow-container::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: radial-gradient(
+    140px circle at var(--mouse-x) var(--mouse-y),
+    var(--glow-color),
+    transparent 100%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 1;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  padding: 1px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card-glow-container:hover::before {
+    opacity: 0.9;
+  }
+}
