@@ -66,11 +66,11 @@ export default function TerminalModal(): JSX.Element | null {
       role="dialog"
       aria-modal="true"
       aria-label="Interactive Terminal"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm transition-opacity duration-150 sm:p-6"
+      class="fixed inset-0 z-50 flex animate-modal-backdrop items-center justify-center bg-black/60 p-3 backdrop-blur-sm sm:p-6"
       onClick={handleBackdropClick}
     >
       <div
-        class="relative flex h-[85dvh] w-full max-w-4xl flex-col overflow-hidden rounded-lg border border-border-subtle bg-canvas/95 font-mono text-xs text-text-primary shadow-2xl backdrop-blur-md transition-all duration-150 selection:bg-accent-green/20 selection:text-accent-green sm:text-sm"
+        class="relative flex h-[85dvh] w-full max-w-4xl animate-modal-content flex-col overflow-hidden rounded-lg border border-border-subtle bg-canvas/95 font-mono text-xs text-text-primary shadow-2xl backdrop-blur-md selection:bg-accent-green/20 selection:text-accent-green sm:text-sm"
         onClick={(e) => e.stopPropagation()}
       >
         {/* ウィンドウヘッダー (macOS風コントロールとセッション情報)。 */}

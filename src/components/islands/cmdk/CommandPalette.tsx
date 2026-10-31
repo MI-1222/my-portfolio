@@ -134,6 +134,7 @@ export default function CommandPalette(): JSX.Element | null {
 
   /** パレットを開く。 */
   const openPalette = useCallback((): void => {
+    window.dispatchEvent(new CustomEvent('close-terminal'));
     playClickSound();
     setIsOpen(true);
     setSelectedIndex(0);
@@ -156,6 +157,12 @@ export default function CommandPalette(): JSX.Element | null {
   useEffect(() => {
     /** ショートカットキー (`⌘K` / `Ctrl+K`) の押下を検知する。 */
     const handleGlobalKeyDown = (event: KeyboardEvent): void => {
+      if (isOpen && event.key === 'Escape') {
+        event.preventDefault();
+        closePalette();
+        return;
+      }
+
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
         event.preventDefault();
         setIsOpen((prev) => {
@@ -163,6 +170,7 @@ export default function CommandPalette(): JSX.Element | null {
             document.body.style.overflow = '';
             return false;
           }
+          window.dispatchEvent(new CustomEvent('close-terminal'));
           document.body.style.overflow = 'hidden';
           setTimeout(() => inputRef.current?.focus(), 50);
           return true;
@@ -199,7 +207,7 @@ export default function CommandPalette(): JSX.Element | null {
       document.removeEventListener('astro:before-swap', handleBeforeSwap);
       document.body.style.overflow = '';
     };
-  }, [closePalette, openPalette]);
+  }, [closePalette, openPalette, isOpen]);
 
   useEffect(() => {
     if (selectedItemRef.current) {
@@ -289,12 +297,12 @@ export default function CommandPalette(): JSX.Element | null {
       class="fixed inset-0 z-50 flex items-start justify-center p-3 pt-12 sm:p-6 sm:pt-20"
     >
       <div
-        class="fixed inset-0 bg-canvas/80 backdrop-blur-md transition-opacity"
+        class="fixed inset-0 animate-modal-backdrop bg-canvas/80 backdrop-blur-md"
         onClick={closePalette}
         aria-hidden="true"
       />
 
-      <div class="relative flex w-full max-w-4xl flex-col overflow-hidden rounded-xl border border-border-strong bg-surface shadow-2xl transition-all">
+      <div class="relative flex w-full max-w-4xl animate-modal-content flex-col overflow-hidden rounded-xl border border-border-strong bg-surface shadow-2xl">
         <div class="flex items-center gap-2.5 border-b border-border-subtle px-4 py-3 sm:px-5">
           <span class="font-mono text-sm font-bold text-accent-cyan">
             &gt;_

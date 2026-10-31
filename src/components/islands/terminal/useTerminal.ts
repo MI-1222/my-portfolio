@@ -116,7 +116,17 @@ export function useTerminal() {
       openTerminal();
     };
 
+    const handleCloseEvent = () => {
+      closeTerminal();
+    };
+
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (isOpen && e.key === 'Escape') {
+        e.preventDefault();
+        closeTerminal();
+        return;
+      }
+
       // Command Palette (⌘K) が押されたらターミナルを閉じる。
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         if (isOpen) {
@@ -169,11 +179,13 @@ export function useTerminal() {
     };
 
     window.addEventListener('open-terminal', handleOpenEvent);
+    window.addEventListener('close-terminal', handleCloseEvent);
     window.addEventListener('keydown', handleKeyDown);
     document.addEventListener('astro:before-swap', handleBeforeSwap);
 
     return () => {
       window.removeEventListener('open-terminal', handleOpenEvent);
+      window.removeEventListener('close-terminal', handleCloseEvent);
       window.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('astro:before-swap', handleBeforeSwap);
       document.body.style.overflow = '';
