@@ -81,8 +81,30 @@ const {
       document.addEventListener('astro:after-swap', restoreTheme);
     </script>
     <script>
-      /** サイト全体のモーションおよびマイクロインタラクションを初期化する。 */
-      import '../scripts/motion/index';
+      let motionModuleLoaded = false;
+
+      async function loadMotion(): Promise<void> {
+        if (motionModuleLoaded) {
+          return;
+        }
+        motionModuleLoaded = true;
+        try {
+          const { initMotion } = await import('../scripts/motion/index');
+          initMotion();
+        } catch (error) {
+          console.warn('Failed to load motion bundle:', error);
+        }
+      }
+
+      if (typeof window !== 'undefined') {
+        if ('requestIdleCallback' in window) {
+          window.requestIdleCallback(loadMotion, { timeout: 1200 });
+        } else {
+          document.addEventListener('astro:page-load', loadMotion, {
+            once: true,
+          });
+        }
+      }
     </script>
   </head>
   <body
