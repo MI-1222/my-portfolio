@@ -86,12 +86,6 @@ export function initHeroMotion(container: HTMLElement): void {
     scrambleText(el, rawText, 0.5, index * 0.08);
   });
 
-  const title = container.querySelector<HTMLElement>(
-    '[data-animate="hero-title"]',
-  );
-  const role = container.querySelector<HTMLElement>(
-    '[data-animate="hero-role"]',
-  );
   const terminal = container.querySelector<HTMLElement>(
     '[data-animate="hero-terminal"]',
   );
@@ -104,16 +98,6 @@ export function initHeroMotion(container: HTMLElement): void {
 
   const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
 
-  if (title && role) {
-    tl.from([title, role], {
-      y: 12,
-      autoAlpha: 0,
-      duration: 0.5,
-      stagger: 0.08,
-      clearProps: 'all',
-    });
-  }
-
   if (terminal) {
     tl.from(
       terminal,
@@ -123,7 +107,7 @@ export function initHeroMotion(container: HTMLElement): void {
         duration: 0.45,
         clearProps: 'all',
       },
-      '-=0.3',
+      '+=0.05',
     );
   }
 
