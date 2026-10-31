@@ -1,0 +1,132 @@
+---
+/**
+ * 制作物詳細(技術仕様解説)の動的ルーティングページ。
+ * 2カラム・エディトリアルレイアウト、HUDヘッダー、Sticky目次を提供する。
+ */
+import { getCollection, render } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import Container from '../../components/common/Container.astro';
+import ProjectHeader from '../../components/projects/ProjectHeader.astro';
+import TableOfContents from '../../components/projects/TableOfContents.astro';
+
+/** 全制作物の静的パス一覧と前後ナビゲーションプロパティを生成する。 */
+/** 全制作物の静的パス一覧と前後ナビゲーションプロパティを生成する。 */
+export async function getStaticPaths() {
+  const allProjects = await getCollection('projects');
+
+  const sorted = [...allProjects].sort(
+    (a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime(),
+  );
+
+  return sorted.map((project, index) => {
+    const prevProject = index > 0 ? sorted[index - 1] : null;
+    const nextProject = index < sorted.length - 1 ? sorted[index + 1] : null;
+
+    return {
+      params: { slug: project.id },
+      props: {
+        project,
+        prevProject,
+        nextProject,
+      },
+    };
+  });
+}
+
+/** 記事詳細ページのプロパティ定義。 */
+interface Props {
+  /** 現在表示中の記事データ。 */
+  project: CollectionEntry<'projects'>;
+  /** 前の記事データ(存在する場合)。 */
+  prevProject: CollectionEntry<'projects'> | null;
+  /** 次の記事データ(存在する場合)。 */
+  nextProject: CollectionEntry<'projects'> | null;
+}
+
+const { project, prevProject, nextProject } = Astro.props;
+const { Content, headings } = await render(project);
+---
+
+<Layout
+  title={`${project.data.title} | MI-1222`}
+  description={project.data.summary}
+>
+  <main class="py-10 sm:py-16">
+    <Container size="default">
+      <ProjectHeader
+        title={project.data.title}
+        subtitle={project.data.subtitle}
+        categoryLabel={project.data.categoryLabel}
+        status={project.data.status}
+        accent={project.data.accent}
+        publishedAt={project.data.publishedAt}
+        updatedAt={project.data.updatedAt}
+        tags={project.data.tags}
+        metrics={project.data.metrics}
+        githubUrl={project.data.githubUrl}
+        demoUrl={project.data.demoUrl}
+        verifiedVersions={project.data.verifiedVersions}
+        cliCommand={project.data.cliCommand}
+      />
+
+      <div class="mt-12 grid grid-cols-1 gap-12 lg:grid-cols-12">
+        <div class="min-w-0 lg:col-span-8">
+          <article class="prose max-w-none">
+            <Content />
+          </article>
+
+          <nav
+            class="mt-16 flex flex-col gap-4 border-t border-border-subtle pt-8 sm:flex-row sm:items-center sm:justify-between font-mono text-xs"
+            aria-label="前後のナビゲーション"
+          >
+            {prevProject ? (
+              <a
+                href={`/projects/${prevProject.id}`}
+                class="group flex flex-col gap-1 rounded-lg border border-border-subtle bg-surface p-4 transition-colors hover:border-border-strong sm:max-w-[48%]"
+              >
+                <span class="text-text-muted transition-transform group-hover:-translate-x-1">
+                  ← PREV DOSSIER
+                </span>
+                <span class="font-bold text-text-primary group-hover:text-accent-cyan truncate">
+                  {prevProject.data.title}
+                </span>
+              </a>
+            ) : (
+              <div class="hidden sm:block" />
+            )}
+
+            {nextProject ? (
+              <a
+                href={`/projects/${nextProject.id}`}
+                class="group flex flex-col items-end gap-1 rounded-lg border border-border-subtle bg-surface p-4 transition-colors hover:border-border-strong sm:max-w-[48%]"
+              >
+                <span class="text-text-muted transition-transform group-hover:translate-x-1">
+                  NEXT DOSSIER →
+                </span>
+                <span class="font-bold text-text-primary group-hover:text-accent-cyan truncate text-right">
+                  {nextProject.data.title}
+                </span>
+              </a>
+            ) : (
+              <div class="hidden sm:block" />
+            )}
+          </nav>
+
+          <div class="mt-8 border-t border-border-subtle/40 pt-6 text-center font-mono text-xs">
+            <a
+              href="/#works"
+              class="inline-flex items-center gap-2 text-text-secondary transition-colors hover:text-accent-cyan"
+            >
+              <span>← Back to Index of Works</span>
+            </a>
+          </div>
+        </div>
+
+        <aside class="hidden lg:col-span-4 lg:block">
+          <TableOfContents headings={headings} />
+        </aside>
+      </div>
+    </Container>
+  </main>
+</Layout>
