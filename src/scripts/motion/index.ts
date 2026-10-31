@@ -6,7 +6,6 @@
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { initSoundFX } from './soundFX';
-import { initScrollTransport, destroyScrollTransport } from './scrollTransport';
 import { initHeroMotion } from './heroMotion';
 import {
   initCardInteractions,
@@ -28,7 +27,7 @@ function handleLayoutChange(): void {
 
 /**
  * 現在の DOM 状態に合わせてページ内の全アニメーション・インタラクションを初期化する。
- * 既存コンテキストの破棄後、音声フィードバック、スクロールトランスポート、
+ * 既存コンテキストの破棄後、音声フィードバック、
  * ヒーロー・カード・タイムラインの各演出を `gsap.context()` 内にスコープ化して登録する。
  */
 export function initMotion(): void {
@@ -38,7 +37,6 @@ export function initMotion(): void {
 
   destroyMotion();
   initSoundFX();
-  initScrollTransport();
 
   window.addEventListener('layout-change', handleLayoutChange);
 
@@ -72,8 +70,7 @@ export function initMotion(): void {
 
 /**
  * ページ離脱時(`astro:before-swap`)に全アニメーションとリスナーを同期破棄する。
- * イベント購読解除、`gsap.context()` のロールバック、全 `ScrollTrigger` インスタンスの強制破棄、
- * および `Lenis` スクロールトランスポートの解体を行う。
+ * イベント購読解除、`gsap.context()` のロールバック、全 `ScrollTrigger` インスタンスの強制破棄を行う。
  */
 export function destroyMotion(): void {
   if (typeof window !== 'undefined') {
@@ -89,7 +86,6 @@ export function destroyMotion(): void {
   }
 
   ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
-  destroyScrollTransport();
 }
 
 if (typeof window !== 'undefined') {

@@ -90,31 +90,7 @@
 }
 
 /* -------------------------------------------------------------------------- */
-/* 5. Lenis 慣性スクロール最適化設定。                                             */
-/* -------------------------------------------------------------------------- */
-html.lenis,
-html.lenis body {
-  height: auto;
-}
-
-.lenis.lenis-smooth {
-  scroll-behavior: auto !important;
-}
-
-.lenis.lenis-smooth [data-lenis-prevent] {
-  overscroll-behavior: contain;
-}
-
-.lenis.lenis-stopped {
-  overflow: hidden;
-}
-
-.lenis.lenis-scrolling iframe {
-  pointer-events: none;
-}
-
-/* -------------------------------------------------------------------------- */
-/* 6. サイバーミニマル マウス追従 Border Glow & 3D Tilt 基盤。                     */
+/* 5. サイバーミニマル マウス追従 Border Glow & 3D Tilt 基盤。                     */
 /* -------------------------------------------------------------------------- */
 .card-glow-container {
   position: relative;
