@@ -172,6 +172,11 @@ export default function CommandPalette(): JSX.Element | null {
       openPalette();
     };
 
+    /** カスタムイベントによるクローズ処理を行う。 */
+    const handleCustomClose = (): void => {
+      closePalette();
+    };
+
     /** ページ遷移前のクローズ処理を行う。 */
     const handleBeforeSwap = (): void => {
       closePalette();
@@ -179,11 +184,15 @@ export default function CommandPalette(): JSX.Element | null {
 
     window.addEventListener('keydown', handleGlobalKeyDown);
     window.addEventListener('open-cmdk', handleCustomOpen);
+    window.addEventListener('close-cmdk', handleCustomClose);
+    window.addEventListener('open-terminal', handleCustomClose);
     document.addEventListener('astro:before-swap', handleBeforeSwap);
 
     return () => {
       window.removeEventListener('keydown', handleGlobalKeyDown);
       window.removeEventListener('open-cmdk', handleCustomOpen);
+      window.removeEventListener('close-cmdk', handleCustomClose);
+      window.removeEventListener('open-terminal', handleCustomClose);
       document.removeEventListener('astro:before-swap', handleBeforeSwap);
       document.body.style.overflow = '';
     };

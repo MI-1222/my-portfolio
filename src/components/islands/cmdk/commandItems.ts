@@ -207,6 +207,32 @@ export function buildCommandItems(closePalette: () => void): CommandItem[] {
 
   items.push(
     {
+      id: 'action-open-terminal',
+      title: '> ターミナルを起動',
+      subtitle: 'Open Interactive Terminal ([>_] / Ctrl+`)',
+      category: 'actions',
+      categoryLabel: 'Quick Actions',
+      keywords: [
+        'terminal',
+        'term',
+        'cli',
+        'shell',
+        'bash',
+        'zsh',
+        'sh',
+        'ターミナル',
+        'シェル',
+        'コマンド',
+      ],
+      action: () => {
+        closePalette();
+        window.dispatchEvent(new CustomEvent('open-terminal'));
+      },
+      detail: {
+        summary: '対話型ターミナルモーダルを起動してコマンドライン操作を行う。',
+      },
+    },
+    {
       id: 'action-theme-toggle',
       title: '> テーマの切り替え',
       subtitle: 'Toggle Theme (Dark / Light)',
