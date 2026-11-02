@@ -133,90 +133,41 @@ const { Content, headings } = await render(project);
 </Layout>
 
 <script>
-  let mermaidLoaded = false;
-  let mermaidModule: (typeof import('mermaid'))['default'] | null = null;
-  let chartCounter = 0;
+  import { renderMermaidElement } from '../../lib/mermaid';
 
-  /** Mermaid モジュールを遅延ロードし初期化する。 */
-  async function loadMermaid(): Promise<
-    (typeof import('mermaid'))['default'] | null
-  > {
-    if (!mermaidLoaded) {
-      try {
-        const { default: mermaid } = await import('mermaid');
-        mermaid.initialize({
-          startOnLoad: false,
-          theme: 'dark',
-          themeVariables: {
-            darkMode: true,
-            background: '#0d1117',
-            primaryColor: '#161b22',
-            primaryTextColor: '#f0f6fc',
-            primaryBorderColor: '#30363d',
-            lineColor: '#56d4dd',
-            secondaryColor: '#21262d',
-            tertiaryColor: '#161b22',
-            noteBkgColor: '#161b22',
-            noteTextColor: '#f0f6fc',
-            noteBorderColor: '#30363d',
-            actorBkg: '#161b22',
-            actorBorder: '#30363d',
-            actorTextColor: '#f0f6fc',
-            actorLineColor: '#56d4dd',
-            signalColor: '#f0f6fc',
-            signalTextColor: '#f0f6fc',
-          },
-          fontFamily: 'JetBrains Mono, monospace',
-        });
-        mermaidModule = mermaid;
-        mermaidLoaded = true;
-      } catch (err) {
-        console.error('Failed to load Mermaid:', err);
-        return null;
-      }
-    }
-    return mermaidModule;
-  }
-
-  /** 記事内の Mermaid コードブロックを SVG へ置換描画する。 */
+  /** 記事内の Mermaid コードブロックを Pele コンポーネントへ置換描画する。 */
   async function renderArticleMermaidCharts(): Promise<void> {
     const codeBlocks = document.querySelectorAll<HTMLElement>(
-      'article.prose pre code.language-mermaid, article.prose pre.mermaid',
+      'article.prose pre[data-language="mermaid"], article.prose pre.mermaid, article.prose pre code.language-mermaid',
     );
     if (codeBlocks.length === 0) {
       return;
     }
 
-    const mermaid = await loadMermaid();
-    if (!mermaid) {
-      return;
-    }
-
-    for (const block of codeBlocks) {
-      // 既にレンダリング済みであればスキップする。
-      const pre = block.closest('pre');
+    for (const block of Array.from(codeBlocks)) {
+      const pre =
+        block.tagName.toLowerCase() === 'pre' ? block : block.closest('pre');
       if (!pre || pre.dataset.mermaidRendered === 'true') {
         continue;
       }
       pre.dataset.mermaidRendered = 'true';
 
-      const code = block.textContent?.trim();
+      const code = pre.textContent?.trim();
       if (!code) {
         continue;
       }
 
-      const chartId = `mermaid-proj-${chartCounter++}`;
+      /** Pele 描画用のコンテナ要素。 */
       const container = document.createElement('div');
-      container.className =
-        'my-6 flex justify-center overflow-x-auto rounded-lg border border-border-subtle bg-surface/80 p-4 not-prose';
+      container.className = 'mermaid-block not-prose';
+      container.setAttribute('data-mermaid-code', code);
+
+      pre.parentNode?.replaceChild(container, pre);
 
       try {
-        const { svg } = await mermaid.render(chartId, code);
-        container.innerHTML = svg;
-        pre.parentNode?.replaceChild(container, pre);
+        await renderMermaidElement(container);
       } catch (err) {
-        console.warn(`Failed to render Mermaid diagram (${chartId}):`, err);
-        // エラー時は元の要素を保持する。
+        console.warn('Failed to render Mermaid diagram with Pele:', err);
       }
     }
   }

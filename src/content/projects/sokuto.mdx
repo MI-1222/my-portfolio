@@ -630,7 +630,7 @@ flowchart TD
     Saccade["Saccade Head: 次の注視グリッド選定"]
     --> Crop["中心窩 128x128 クロップ抽出（~3ms）"]
     --> SuffCheck{"情報量は十分か？<br/>（Sufficiency Head）"}
-    SuffCheck -- "未達成（最大3回まで）" -->|復帰抑制マスク| Saccade
+    SuffCheck -- "未達成（最大3回まで・復帰抑制マスク）" --> Saccade
   end
 
   %% 出口 2: 局所ホップ

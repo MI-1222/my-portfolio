@@ -539,36 +539,7 @@ const branchAccentStyles: Record<string, { badge: string }> = {
 </section>
 
 <script>
-  let mermaidLoaded = false;
-  let mermaidModule: (typeof import('mermaid'))['default'] | null = null;
-  let chartCounter = 0;
-
-  /**
-   * Mermaidライブラリを遅延ロードし初期化する。
-   */
-  const loadMermaid = async () => {
-    if (!mermaidLoaded) {
-      const { default: mermaid } = await import('mermaid');
-      mermaid.initialize({
-        startOnLoad: false,
-        theme: 'dark',
-        themeVariables: {
-          darkMode: true,
-          background: 'transparent',
-          mainBkg: '#161b22',
-          textColor: '#e6edf3',
-          primaryColor: '#1f2937',
-          primaryTextColor: '#e6edf3',
-          lineColor: '#56d4dd',
-          fontFamily: 'inherit',
-        },
-        securityLevel: 'loose',
-      });
-      mermaidModule = mermaid;
-      mermaidLoaded = true;
-    }
-    return mermaidModule;
-  };
+  import { renderMermaidToSvg } from '../../lib/mermaid';
 
   /**
    * 指定コンテナ内の未描画Mermaid要素を描画する。
@@ -581,18 +552,14 @@ const branchAccentStyles: Record<string, { badge: string }> = {
     );
     if (targets.length === 0) return;
 
-    const mermaid = await loadMermaid();
-    if (!mermaid) return;
-
     for (const target of targets) {
       const code = target.dataset.mermaid;
       if (!code) continue;
 
       target.setAttribute('data-rendered', 'true');
-      const chartId = `mermaid-chart-${chartCounter++}`;
 
-      try {
-        const { svg } = await mermaid.render(chartId, code);
+      const { svg, error } = await renderMermaidToSvg(code);
+      if (svg) {
         target.innerHTML = svg;
         target.classList.remove('opacity-0');
         const placeholder = target.nextElementSibling;
@@ -602,7 +569,7 @@ const branchAccentStyles: Record<string, { badge: string }> = {
         ) {
           placeholder.remove();
         }
-      } catch (error) {
+      } else {
         console.error('Mermaid render error:', error);
         target.innerHTML = `<pre class="font-mono text-xs text-accent-coral whitespace-pre-wrap">${code}</pre>`;
         target.classList.remove('opacity-0');
