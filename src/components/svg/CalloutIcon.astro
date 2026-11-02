@@ -1,0 +1,49 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+
+/**
+ * コールアウト用アイコンコンポーネント。
+ * Google Material Symbols のアイコンを採用。
+ */
+interface Props extends HTMLAttributes<'svg'> {
+  /** コールアウトの種別。 */
+  type: 'note' | 'tip' | 'important' | 'warning' | 'caution';
+  /** 追加のCSSクラス名。 */
+  class?: string;
+  /** 装飾用アイコンとして支援技術から隠すかどうか(デフォルト: true)。 */
+  ariaHidden?: boolean;
+}
+
+const { type, class: className, ariaHidden = true, ...rest } = Astro.props;
+
+/** 種別ごとの SVG パス定義。 */
+const PATH_MAP: Record<Props['type'], string> = {
+  // Info (note)
+  note: 'M11,17h2V11H11v6Zm1.71-8.29Q13,8.42 13,8q0-0.43-0.29-0.71T12,7T11.29,7.29T11,8q0,0.42 0.29,0.71T12,9t0.71-0.29ZM12,22q-2.07,0-3.9-0.79q-1.82-0.79-3.17-2.14Q3.58,17.73 2.79,15.9T2,12Q2,9.92 2.79,8.1Q3.58,6.27 4.93,4.93Q6.28,3.57 8.1,2.79Q9.93,2 12,2t3.9,0.79t3.17,2.14q1.35,1.35 2.14,3.17Q22,9.92 22,12t-0.79,3.9t-2.14,3.17q-1.35,1.35-3.17,2.14T12,22Zm0-2q3.35,0 5.68-2.32T20,12T17.68,6.32T12,4T6.33,6.32T4,12t2.33,5.68T12,20Zm0-8Z',
+  // Lightbulb (tip)
+  tip: 'M10,18q-0.82,0-1.41-0.59T8,16V14.75q-1.42-0.98-2.21-2.5T5,9Q5,6.07 7.04,4.04T12,2t4.96,2.04T19,9q0,1.72-0.79,3.24T16,14.75V16q0,0.82-0.59,1.41T14,18H10Zm0-2h4V13.7l0.85-0.6q1.02-0.7 1.59-1.79T17,9q0-2.07-1.46-3.54T12,4Q9.93,4 8.46,5.46Q7,6.93 7,9q0,1.22 0.56,2.31T9.15,13.1L10,13.7V16Zm0,6q-0.42,0-0.71-0.29Q9,21.43 9,21V20h6v1q0,0.43-0.29,0.71T14,22H10ZM12,9Z',
+  // Speech bubble (important)
+  important:
+    'M6,14h8V12H6v2Zm0-3H18V9H6v2ZM6,8H18V6H6V8ZM2,22V4Q2,3.17 2.59,2.59T4,2H20q0.83,0 1.41,0.59T22,4V16q0,0.82-0.59,1.41T20,18H6L2,22Zm3.15-6H20V4H4V17.13L5.15,16ZM4,16V4V16Z',
+  // Warning triangle (warning)
+  warning:
+    'M1,21L12,2L23,21H1Zm3.45-2h15.1L12,6L4.45,19Zm8.26-1.29Q13,17.43 13,17t-0.29-0.71T12,16t-0.71,0.29T11,17t0.29,0.71T12,18t0.71-0.29ZM11,15h2V10H11v5Zm1-2.5Z',
+  // Octagonal stop/x (caution)
+  caution:
+    'M8.25,21L3,15.75V8.25L8.25,3h7.5L21,8.25v7.5L15.75,21H8.25Zm0.9-4.75L12,13.4l2.85,2.85l1.4-1.4L13.4,12l2.85-2.85l-1.4-1.4L12,10.6L9.15,7.75l-1.4,1.4L10.6,12L7.75,14.85l1.4,1.4ZM9.1,19h5.8L19,14.9V9.1L14.9,5H9.1L5,9.1v5.8L9.1,19ZM12,12Z',
+};
+
+const pathData = PATH_MAP[type] ?? PATH_MAP.note;
+---
+
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 24 24"
+  fill="currentColor"
+  focusable="false"
+  class:list={['inline-block shrink-0', className]}
+  aria-hidden={ariaHidden ? 'true' : undefined}
+  {...rest}
+>
+  <path d={pathData}></path>
+</svg>

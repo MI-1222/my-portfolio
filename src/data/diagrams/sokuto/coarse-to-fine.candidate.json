@@ -1,0 +1,220 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "sokuto: Coarse-to-Fine Soft-Beam 階層ルーティング",
+    "subtitle": "77クラス規模のアテンション干渉を打破する2段階スクリーニングと動的境界救済",
+    "animation": "trace",
+    "visual_preset": "signal-flow",
+    "quality_profile": "showcase",
+    "output": "public/diagrams/sokuto/coarse-to-fine.html"
+  },
+  "lanes": [
+    { "id": "input", "label": "入力 ＆ 候補群 (77クラス)" },
+    { "id": "coarse", "label": "第1パス: Coarse 大分類 (10クラスタ)" },
+    { "id": "beam", "label": "Soft-Beam 判定 (単一クラスタ採択)" },
+    { "id": "rescue", "label": "動的マージ救済バッファ (最大16件)" },
+    { "id": "fine", "label": "第2パス: Fine 精密推論 ＆ 確率較正" },
+    {
+      "id": "escalate",
+      "label": "System 2 早期エスカレーション",
+      "variant": "exception"
+    }
+  ],
+  "phases": [
+    {
+      "id": "screening",
+      "label": "第1フェーズ: 大分類スクリーニング",
+      "fromCol": 0,
+      "toCol": 1,
+      "variant": "default"
+    },
+    {
+      "id": "gating",
+      "label": "動的マージン判定 ＆ 救済",
+      "fromCol": 2,
+      "toCol": 3,
+      "variant": "emphasis"
+    },
+    {
+      "id": "refinement",
+      "label": "第2フェーズ: 精密推論 ＆ 較正",
+      "fromCol": 4,
+      "toCol": 5,
+      "variant": "default"
+    }
+  ],
+  "groups": [
+    {
+      "id": "beam_group",
+      "label": "動的候補展開 (救済率 88.9%)",
+      "lane": "rescue",
+      "fromCol": 2,
+      "toCol": 3,
+      "variant": "emphasis"
+    },
+    {
+      "id": "fine_group",
+      "label": "置換同変 SAB 推論スタック (27ms)",
+      "lane": "fine",
+      "fromCol": 4,
+      "toCol": 5,
+      "variant": "emphasis"
+    }
+  ],
+  "mainPath": [
+    "req",
+    "coarse_enc",
+    "margin_check",
+    "single_cluster",
+    "fine_sab",
+    "calib_out"
+  ],
+  "nodes": [
+    {
+      "id": "req",
+      "lane": "input",
+      "col": 0,
+      "type": "external",
+      "icon": "start",
+      "label": "入力リクエスト",
+      "sublabel": "Banking77-ja 77クラス候補",
+      "width": 170
+    },
+    {
+      "id": "coarse_enc",
+      "lane": "coarse",
+      "col": 1,
+      "type": "backend",
+      "icon": "backend",
+      "label": "Coarse エンコーダ推論",
+      "sublabel": "大分類 10 クラスタ高速走査",
+      "tag": "1次スクリーニング",
+      "width": 180
+    },
+    {
+      "id": "early_exit",
+      "lane": "escalate",
+      "col": 2,
+      "type": "security",
+      "icon": "stop",
+      "label": "Early-Exit 即時委譲",
+      "sublabel": "超低確信 (S < 0.25)",
+      "tag": "無駄な第2パスを打たず即死防止",
+      "width": 185
+    },
+    {
+      "id": "margin_check",
+      "lane": "beam",
+      "col": 2,
+      "type": "backend",
+      "icon": "decision",
+      "label": "Soft-Beam マージン判定",
+      "sublabel": "Top-1 vs Top-2 確率差 M",
+      "tag": "閾値 M ≧ 0.35",
+      "width": 185
+    },
+    {
+      "id": "single_cluster",
+      "lane": "beam",
+      "col": 3,
+      "type": "backend",
+      "icon": "active",
+      "label": "単一クラスタ採択",
+      "sublabel": "高確信判定 (候補数: 7〜8件)",
+      "tag": "通常高確信パス",
+      "width": 175
+    },
+    {
+      "id": "beam_merge",
+      "lane": "rescue",
+      "col": 3,
+      "type": "backend",
+      "icon": "active",
+      "label": "Soft-Beam 動的マージ",
+      "sublabel": "境界領域 (最大16件へ展開)",
+      "tag": "救済率 88.9%",
+      "width": 180
+    },
+    {
+      "id": "fine_sab",
+      "lane": "fine",
+      "col": 4,
+      "type": "backend",
+      "icon": "backend",
+      "label": "Fine 置換同変推論 (SAB)",
+      "sublabel": "少数精鋭候補のアテンション集約",
+      "tag": "局所フル推論",
+      "width": 195
+    },
+    {
+      "id": "calib_out",
+      "lane": "fine",
+      "col": 5,
+      "type": "frontend",
+      "icon": "success",
+      "label": "確定判断 & Dirichlet較正",
+      "sublabel": "エントロピー連動温度補正",
+      "tag": "Top-1 88.31% / 27.01ms",
+      "width": 190
+    }
+  ],
+  "edges": [
+    {
+      "id": "e_req_coarse",
+      "from": "req",
+      "to": "coarse_enc",
+      "label": "77候補投入",
+      "variant": "default"
+    },
+    {
+      "id": "e_coarse_exit",
+      "from": "coarse_enc",
+      "to": "early_exit",
+      "label": "超低確信 (S < 0.25)",
+      "variant": "dashed"
+    },
+    {
+      "id": "e_coarse_beam",
+      "from": "coarse_enc",
+      "to": "margin_check",
+      "label": "正常スコア",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e_beam_single",
+      "from": "margin_check",
+      "to": "single_cluster",
+      "label": "大差 (M ≧ 0.35)",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e_beam_merge",
+      "from": "margin_check",
+      "to": "beam_merge",
+      "label": "僅差 (M < 0.35)",
+      "variant": "default"
+    },
+    {
+      "id": "e_single_fine",
+      "from": "single_cluster",
+      "to": "fine_sab",
+      "label": "7〜8件転送",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e_merge_fine",
+      "from": "beam_merge",
+      "to": "fine_sab",
+      "label": "救済16件転送",
+      "variant": "default"
+    },
+    {
+      "id": "e_fine_calib",
+      "from": "fine_sab",
+      "to": "calib_out",
+      "label": "較正 & 確率確定",
+      "variant": "emphasis"
+    }
+  ]
+}

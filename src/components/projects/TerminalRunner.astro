@@ -1,0 +1,93 @@
+---
+/**
+ * ターミナル連動実行ボタンコンポーネント。
+ * クリック時にターミナルモーダルを起動し、指定されたコマンドを自動実行する。
+ */
+interface Props {
+  /** 実行対象のターミナルコマンド。 */
+  command: string;
+  /** ボタンの表示ラベル(省略時はコマンド文字列)。 */
+  label?: string;
+  /** 補足説明文(右側に表示)。 */
+  description?: string;
+  /** ボタン下部に添える注記・免責文(※ ...)。 */
+  disclaimer?: string;
+  /** 右端のアクションバッジ文言(デフォルト: 'CLI Preview')。 */
+  actionLabel?: string;
+}
+
+const {
+  command,
+  label,
+  description,
+  disclaimer,
+  actionLabel = 'CLI Preview',
+} = Astro.props;
+const displayLabel = label ?? `$ ${command}`;
+---
+
+<div class="terminal-runner-wrapper my-4 not-prose">
+  <button
+    type="button"
+    class="terminal-runner-btn group flex w-full items-center justify-between gap-3 rounded-lg border border-border-subtle bg-surface/80 px-4 py-2.5 text-left transition-all duration-200 hover:border-accent-cyan/60 hover:bg-surface-hover hover:shadow-[0_0_15px_rgba(86,212,221,0.15)] focus:outline-none focus:ring-1 focus:ring-accent-cyan"
+    data-command={command}
+    aria-label={`ターミナルで実行: ${command}`}
+  >
+    <div class="flex items-center gap-2.5 min-w-0">
+      <span class="flex size-5 shrink-0 items-center justify-center rounded border border-accent-green/40 bg-accent-green/10 font-mono text-[11px] font-bold text-accent-green group-hover:border-accent-green group-hover:bg-accent-green/20">
+        &gt;_
+      </span>
+      <span class="font-mono text-xs font-semibold text-text-primary group-hover:text-accent-cyan truncate">
+        {displayLabel}
+      </span>
+    </div>
+
+    <div class="flex items-center gap-2 shrink-0">
+      {description && (
+        <span class="hidden sm:inline font-mono text-[11px] text-text-muted">
+          {description}
+        </span>
+      )}
+      <span class="rounded border border-border-subtle bg-bg-surface px-1.5 py-0.5 font-mono text-[10px] text-text-muted transition-colors group-hover:border-accent-cyan/40 group-hover:text-accent-cyan">
+        {actionLabel}
+      </span>
+    </div>
+  </button>
+  {disclaimer && (
+    <p class="mt-1.5 px-1 font-mono text-[11px] text-text-muted leading-relaxed">
+      {disclaimer}
+    </p>
+  )}
+</div>
+
+<script>
+  /** ターミナル実行ボタンのクリックイベントを設定する。 */
+  function setupTerminalRunners(): void {
+    const buttons = document.querySelectorAll<HTMLButtonElement>(
+      '.terminal-runner-btn',
+    );
+    buttons.forEach((btn) => {
+      // 多重登録を防止する。
+      if (btn.dataset.initialized === 'true') {
+        return;
+      }
+      btn.dataset.initialized = 'true';
+
+      btn.addEventListener('click', () => {
+        const cmd = btn.dataset.command;
+        if (!cmd) {
+          return;
+        }
+        window.dispatchEvent(
+          new CustomEvent('open-terminal', {
+            detail: { command: cmd },
+          }),
+        );
+      });
+    });
+  }
+
+  // 初回ロードおよび Astro ページ遷移時にバインドする。
+  setupTerminalRunners();
+  document.addEventListener('astro:page-load', setupTerminalRunners);
+</script>

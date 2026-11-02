@@ -1,0 +1,188 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "sokuto: 長文State分離交差アテンション ＆ L3キャッシュ局所性アーキテクチャ",
+    "subtitle": "2セッション分割・xxHash3動的INT8圧縮・IoBindingゼロコピーによるO((N+M)²)計算量爆発の排除",
+    "animation": "trace",
+    "visual_preset": "signal-flow",
+    "quality_profile": "showcase",
+    "output": "public/diagrams/sokuto/state-l3-cache.html"
+  },
+  "lanes": [
+    { "id": "doc", "label": "ドキュメント ＆ 質問ストリーム" },
+    { "id": "l3cache", "label": "CPU L3 キャッシュ保護領域 (<=6.5MB)" },
+    { "id": "compute", "label": "交差アテンション推論エンジン" },
+    { "id": "decision", "label": "決定論的型付き出力" }
+  ],
+  "phases": [
+    {
+      "id": "cold",
+      "label": "コールドセッション: State キャッシュ (1回のみ)",
+      "fromCol": 0,
+      "toCol": 1,
+      "variant": "default"
+    },
+    {
+      "id": "transfer",
+      "label": "ゼロコピー転送 (~0.1ms)",
+      "fromCol": 2,
+      "toCol": 2,
+      "variant": "emphasis"
+    },
+    {
+      "id": "hot",
+      "label": "ホットセッション: 追加質問即答 (各8ms)",
+      "fromCol": 3,
+      "toCol": 4,
+      "variant": "default"
+    }
+  ],
+  "groups": [
+    {
+      "id": "cache_group",
+      "label": "CPU L3 キャッシュ常駐領域 (<=6.5MB)",
+      "lane": "l3cache",
+      "fromCol": 1,
+      "toCol": 2,
+      "variant": "emphasis"
+    },
+    {
+      "id": "cross_group",
+      "label": "2層 交差アテンション ＆ SAB スタック",
+      "lane": "compute",
+      "fromCol": 3,
+      "toCol": 3,
+      "variant": "emphasis"
+    }
+  ],
+  "mainPath": [
+    "doc_state",
+    "state_enc",
+    "cache_engine",
+    "io_binding",
+    "cross_attn",
+    "det_output"
+  ],
+  "nodes": [
+    {
+      "id": "doc_state",
+      "lane": "doc",
+      "col": 0,
+      "type": "external",
+      "icon": "start",
+      "label": "長文ドキュメント (State)",
+      "sublabel": "契約書・利用規約 (最大 8k)",
+      "width": 160
+    },
+    {
+      "id": "state_enc",
+      "lane": "doc",
+      "col": 1,
+      "type": "backend",
+      "icon": "backend",
+      "label": "State エンコーダ",
+      "sublabel": "ModernBERT 最終層 (H_state)",
+      "tag": "Cold 1回のみ実行",
+      "width": 160
+    },
+    {
+      "id": "cache_engine",
+      "lane": "l3cache",
+      "col": 1,
+      "type": "database",
+      "icon": "database",
+      "label": "xxHash3 & INT8 圧縮",
+      "sublabel": "INT8 圧縮 (550MB → 6.3MB)",
+      "tag": "L3 キャッシュ保護 (< 6.5MB)",
+      "width": 165
+    },
+    {
+      "id": "query_stream",
+      "lane": "doc",
+      "col": 2,
+      "type": "external",
+      "icon": "start",
+      "label": "質問ストリーム (Query)",
+      "sublabel": "Q1: 守秘義務 / Q2: 競業期間",
+      "width": 160
+    },
+    {
+      "id": "io_binding",
+      "lane": "l3cache",
+      "col": 2,
+      "type": "backend",
+      "icon": "active",
+      "label": "ort::IoBinding ゼロコピー",
+      "sublabel": "DDR5主記憶往復を完全回避",
+      "tag": "転送遅延 ~0.1ms 想定",
+      "width": 165
+    },
+    {
+      "id": "cross_attn",
+      "lane": "compute",
+      "col": 3,
+      "type": "backend",
+      "icon": "backend",
+      "label": "Query-to-State Cross-Attn",
+      "sublabel": "2層 交差アテンション & SAB",
+      "tag": "O((N+M)²) 爆発排除",
+      "width": 165
+    },
+    {
+      "id": "det_output",
+      "lane": "decision",
+      "col": 4,
+      "type": "frontend",
+      "icon": "success",
+      "label": "型付き決定 (AutoExecute)",
+      "sublabel": "Choice / Score / Noul 確定",
+      "tag": "追加質問 ~8ms 目標",
+      "width": 160
+    }
+  ],
+  "edges": [
+    {
+      "id": "e_doc_enc",
+      "from": "doc_state",
+      "to": "state_enc",
+      "label": "8k Tokens",
+      "variant": "default"
+    },
+    {
+      "id": "e_enc_cache",
+      "from": "state_enc",
+      "to": "cache_engine",
+      "label": "最終層隠れ状態抽出",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e_cache_io",
+      "from": "cache_engine",
+      "to": "io_binding",
+      "label": "L3キャッシュ常駐",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e_io_cross",
+      "from": "io_binding",
+      "to": "cross_attn",
+      "label": "ゼロコピー転送 (~0.1ms)",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e_query_cross",
+      "from": "query_stream",
+      "to": "cross_attn",
+      "label": "軽量質問投入 (Hot)",
+      "variant": "default"
+    },
+    {
+      "id": "e_cross_out",
+      "from": "cross_attn",
+      "to": "det_output",
+      "label": "8ms確定",
+      "variant": "emphasis"
+    }
+  ]
+}

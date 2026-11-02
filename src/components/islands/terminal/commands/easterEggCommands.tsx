@@ -55,7 +55,7 @@ export const easterEggCommands: CommandDefinition[] = [
 
       context.addLine({
         type: 'system',
-        text: 'Initializing sokuto inference runtime (ModernBERT-ja ONNX / Direct)...',
+        text: '[SIMULATION REPLAY] Initializing sokuto benchmark trace (Apple Silicon physical run)...',
       });
 
       await new Promise((resolve) => setTimeout(resolve, 200));
@@ -126,7 +126,7 @@ export const easterEggCommands: CommandDefinition[] = [
 
       context.addLine({
         type: 'system',
-        text: 'Checking formal specification state machine with Lean 4 kernel...',
+        text: '[SIMULATION REPLAY] Replaying Lean 4 interactive proof & LSP diagnostics trace...',
       });
 
       await new Promise((resolve) => setTimeout(resolve, 180));

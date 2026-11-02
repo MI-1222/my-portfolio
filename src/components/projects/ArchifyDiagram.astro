@@ -1,0 +1,304 @@
+---
+import Fullscreen from '../svg/Fullscreen.astro';
+import FullscreenExit from '../svg/FullscreenExit.astro';
+import OpenInNew from '../svg/OpenInNew.astro';
+
+/**
+ * Archify インタラクティブ図埋め込みコンポーネント。
+ * スタンドアロン HTML として出力された Archify 図を安全に iframe 埋め込みし、
+ * タイトルバー、全画面展開トグル、別タブ閲覧リンク、Wide幅ブレイクアウト、
+ * および公式 embed モード(?embed=1)による自動全幅化・最適スケール再計算を提供する。
+ */
+interface Props {
+  /** 埋め込み対象となる Archify HTML ファイルの公開 URL パス。 */
+  src: string;
+  /** 図のタイトル。 */
+  title: string;
+  /** 補足サブタイトル(省略可能)。 */
+  subtitle?: string;
+  /** デフォルトの埋め込み高さ(CSS 単位。デフォルト: '680px')。 */
+  height?: string;
+  /** 最低保証高さ(CSS 単位。デフォルト: '480px')。 */
+  minHeight?: string;
+  /** 下部に表示するキャプション・操作説明(省略可能)。 */
+  caption?: string;
+  /** 右上に表示するステータスバッジ文言(デフォルト: 'ARCHIFY // INTERACTIVE')。 */
+  badge?: string;
+  /** 全画面展開ボタンを表示するかどうか(デフォルト: true)。 */
+  allowFullscreen?: boolean;
+  /** 別タブで開くリンクを表示するかどうか(デフォルト: true)。 */
+  openInNewTab?: boolean;
+  /** 本文グリッド幅を超えて左右にワイド表示(ブレイクアウト)するかどうか(デフォルト: true)。 */
+  wide?: boolean;
+}
+
+const {
+  src,
+  title,
+  subtitle,
+  height = '680px',
+  minHeight = '480px',
+  caption = '※ 図内のドラッグによるパン移動、ホイールによる拡大縮小、ノード詳細のホバー、右下のトレース再生に対応しています。',
+  badge = 'ARCHIFY // INTERACTIVE',
+  allowFullscreen = true,
+  openInNewTab = true,
+} = Astro.props;
+
+// 一意なコンポーネント ID を生成する。
+const componentId = `archify-diagram-${Math.random().toString(36).substring(2, 9)}`;
+
+// Archify 公式の埋め込みモードクエリ (?embed=1) を付加する。
+const embedSrc = src.includes('?') ? `${src}&embed=1` : `${src}?embed=1`;
+---
+
+<div
+  class:list={[
+    'archify-diagram-container my-8 not-prose w-full rounded-xl border border-border-subtle bg-surface/90 shadow-lg backdrop-blur-sm transition-all duration-200',
+  ]}
+  id={componentId}
+>
+  <!-- ヘッダーバー: タイトル・バッジ・操作ボタン -->
+  <div class="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle/80 bg-surface-hover/50 px-4 py-3">
+    <div class="flex items-center gap-2.5 min-w-0">
+      <span
+        class="flex size-5 shrink-0 items-center justify-center rounded border border-accent-purple/40 bg-accent-purple/10 font-mono text-[11px] font-bold text-accent-purple"
+        aria-hidden="true"
+      >
+        ✦
+      </span>
+      <div class="flex flex-col min-w-0">
+        <h4 class="font-mono text-xs font-semibold text-text-primary truncate">
+          {title}
+        </h4>
+        {subtitle && (
+          <p class="font-mono text-[10px] text-text-muted truncate">
+            {subtitle}
+          </p>
+        )}
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2 shrink-0">
+      <span class="rounded border border-accent-cyan/30 bg-accent-cyan/10 px-2 py-0.5 font-mono text-[10px] font-semibold text-accent-cyan">
+        {badge}
+      </span>
+
+      {openInNewTab && (
+        <a
+          href={src}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-1 rounded border border-border-subtle bg-bg-surface px-2 py-1 font-mono text-[10px] text-text-muted transition-colors hover:border-accent-cyan/50 hover:text-accent-cyan focus:outline-none focus:ring-1 focus:ring-accent-cyan"
+          title="別タブで全画面表示する(完全版ビューアー)。"
+          aria-label="別タブで全画面表示する。"
+        >
+          <OpenInNew class="size-3" ariaHidden={true} />
+          <span class="hidden sm:inline">Open</span>
+        </a>
+      )}
+
+      {allowFullscreen && (
+        <button
+          type="button"
+          class="archify-fullscreen-btn inline-flex items-center gap-1 rounded border border-accent-cyan/40 bg-accent-cyan/10 px-2 py-1 font-mono text-[10px] font-semibold text-accent-cyan transition-colors hover:bg-accent-cyan/20 focus:outline-none focus:ring-1 focus:ring-accent-cyan sm:border-border-subtle sm:bg-bg-surface sm:font-normal sm:text-text-muted sm:hover:border-accent-cyan/50 sm:hover:text-accent-cyan"
+          data-target={componentId}
+          title="全画面表示を切り替える。"
+          aria-label="全画面表示を切り替える。"
+        >
+          <Fullscreen class="size-3 expand-icon" ariaHidden={true} />
+          <FullscreenExit
+            class="size-3 collapse-icon hidden"
+            ariaHidden={true}
+          />
+          <span class="btn-text hidden sm:inline">Expand</span>
+        </button>
+      )}
+    </div>
+  </div>
+
+  <!-- iframe 埋め込みラッパー -->
+  <div
+    class="archify-frame-wrapper relative w-full overflow-hidden bg-bg-canvas/50 h-80 sm:h-(--desktop-height) min-h-65 sm:min-h-(--desktop-min-height)"
+    style={`--desktop-height: ${height}; --desktop-min-height: ${minHeight};`}
+  >
+    <iframe
+      src={embedSrc}
+      title={title}
+      class="archify-iframe size-full border-0"
+      loading="lazy"
+      allow="fullscreen"
+    ></iframe>
+  </div>
+
+  <!-- フッター・キャプション -->
+  {caption && (
+    <div class="border-t border-border-subtle/60 bg-surface/40 px-4 py-1">
+      <p class="font-mono text-[11px] text-text-muted leading-relaxed my-0.5">
+        {caption}
+      </p>
+    </div>
+  )}
+</div>
+
+<style>
+  /* フルスクリーン時のスタイル定義。 */
+  :global(.archify-diagram-container.is-fullscreen) {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 9999 !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: none !important;
+    background: #0a0d14 !important;
+    left: 0 !important;
+    right: 0 !important;
+  }
+
+  :global(.archify-diagram-container.is-fullscreen .archify-frame-wrapper) {
+    height: calc(100vh - 85px) !important;
+    min-height: calc(100vh - 85px) !important;
+  }
+</style>
+
+<script>
+  /** 全画面表示切り替えロジックを設定する。 */
+  function setupArchifyFullscreen(): void {
+    const buttons = document.querySelectorAll<HTMLButtonElement>(
+      '.archify-fullscreen-btn',
+    );
+
+    buttons.forEach((btn) => {
+      if (btn.dataset.initialized === 'true') {
+        return;
+      }
+      btn.dataset.initialized = 'true';
+
+      btn.addEventListener('click', () => {
+        const targetId = btn.dataset.target;
+        if (!targetId) {
+          return;
+        }
+
+        const container = document.getElementById(targetId);
+        if (!container) {
+          return;
+        }
+
+        const isFullscreen = container.classList.toggle('is-fullscreen');
+        const btnText = btn.querySelector('.btn-text');
+        const expandIcon = btn.querySelector('.expand-icon');
+        const collapseIcon = btn.querySelector('.collapse-icon');
+
+        if (isFullscreen) {
+          document.body.style.overflow = 'hidden';
+          if (btnText) {
+            btnText.textContent = 'Collapse';
+          }
+          expandIcon?.classList.add('hidden');
+          collapseIcon?.classList.remove('hidden');
+        } else {
+          document.body.style.overflow = '';
+          if (btnText) {
+            btnText.textContent = 'Expand';
+          }
+          expandIcon?.classList.remove('hidden');
+          collapseIcon?.classList.add('hidden');
+        }
+
+        // 全画面切り替え時に iframe 内の自動 Fit リサイズを発火する。
+        const iframe = container.querySelector<HTMLIFrameElement>('iframe');
+        if (iframe && iframe.contentWindow) {
+          setTimeout(() => {
+            iframe.contentWindow?.dispatchEvent(new Event('resize'));
+          }, 100);
+        }
+      });
+    });
+
+    // ESC キー押下時に全画面モードを解除する。
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        const activeContainer = document.querySelector(
+          '.archify-diagram-container.is-fullscreen',
+        );
+        if (activeContainer) {
+          activeContainer.classList.remove('is-fullscreen');
+          document.body.style.overflow = '';
+          const activeBtn = activeContainer.querySelector(
+            '.archify-fullscreen-btn .btn-text',
+          );
+          if (activeBtn) {
+            activeBtn.textContent = 'Expand';
+          }
+          const expandIcon = activeContainer.querySelector(
+            '.archify-fullscreen-btn .expand-icon',
+          );
+          const collapseIcon = activeContainer.querySelector(
+            '.archify-fullscreen-btn .collapse-icon',
+          );
+          expandIcon?.classList.remove('hidden');
+          collapseIcon?.classList.add('hidden');
+          const iframe =
+            activeContainer.querySelector<HTMLIFrameElement>('iframe');
+          if (iframe && iframe.contentWindow) {
+            setTimeout(() => {
+              iframe.contentWindow?.dispatchEvent(new Event('resize'));
+            }, 100);
+          }
+        }
+      }
+    });
+  }
+
+  /**
+   * iframe 内の埋め込み最適化と自動スケール再計算を発火する。
+   */
+  function setupArchifyEmbedOptimization(): void {
+    const iframes =
+      document.querySelectorAll<HTMLIFrameElement>('.archify-iframe');
+
+    iframes.forEach((iframe) => {
+      /** iframe 内部へスタイルを注入しリサイズを発火する処理。 */
+      const applyOptimization = () => {
+        try {
+          const doc = iframe.contentDocument;
+          if (!doc) {
+            return;
+          }
+
+          // 確実に embed 属性が付与されるよう補強する。
+          doc.documentElement.setAttribute('data-embed', 'true');
+
+          // キャンバスの自動 Fit-to-view 再計算を発火させる。
+          requestAnimationFrame(() => {
+            iframe.contentWindow?.dispatchEvent(new Event('resize'));
+          });
+        } catch {
+          // クロスオリジン保護等によるフォールバック。
+        }
+      };
+
+      // 既に読み込み済みの場合は即時適用する。
+      if (
+        iframe.contentDocument &&
+        iframe.contentDocument.readyState === 'complete'
+      ) {
+        applyOptimization();
+      }
+
+      // ロード完了時にも再実行する。
+      iframe.addEventListener('load', applyOptimization);
+    });
+  }
+
+  /** 各種セットアップの初期化とページ遷移バインドを行う。 */
+  function initArchifyComponents(): void {
+    setupArchifyFullscreen();
+    setupArchifyEmbedOptimization();
+  }
+
+  initArchifyComponents();
+  document.addEventListener('astro:page-load', initArchifyComponents);
+</script>
