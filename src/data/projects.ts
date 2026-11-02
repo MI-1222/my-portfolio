@@ -86,6 +86,7 @@ export const projects: ProjectItem[] = [
     status: 'OSS',
     accent: 'purple',
     featured: true,
+    link: '/projects/sokuto',
     githubUrl: 'https://github.com/MI-1222/sokuto',
     isPublic: true,
     metrics: [
@@ -119,6 +120,7 @@ export const projects: ProjectItem[] = [
     status: 'OSS',
     accent: 'cyan',
     featured: true,
+    link: '/projects/patto-md',
     githubUrl: 'https://github.com/MI-1222/patto-md',
     isPublic: true,
     metrics: [
@@ -151,6 +153,7 @@ export const projects: ProjectItem[] = [
     status: 'OSS',
     accent: 'green',
     featured: true,
+    link: '/projects/lean4-skills',
     githubUrl: 'https://github.com/MI-1222/lean4-skills',
     isPublic: true,
     metrics: [

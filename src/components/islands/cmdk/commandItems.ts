@@ -148,9 +148,11 @@ export function buildCommandItems(closePalette: () => void): CommandItem[] {
         ...(project.searchKeywords || []),
         ...(project.tags || []),
       ],
-      isExternal: Boolean(project.githubUrl),
+      isExternal: !project.link && Boolean(project.githubUrl),
       action: () => {
-        if (project.githubUrl) {
+        if (project.link) {
+          handleNavigate(project.link, closePalette);
+        } else if (project.githubUrl) {
           closePalette();
           window.open(project.githubUrl, '_blank', 'noopener,noreferrer');
         } else {
@@ -166,7 +168,7 @@ export function buildCommandItems(closePalette: () => void): CommandItem[] {
           Status: project.status,
           Featured: project.featured ? 'Yes' : 'No',
         },
-        linkUrl: project.githubUrl || `/#${project.id}`,
+        linkUrl: project.link || project.githubUrl || `/#${project.id}`,
       },
     });
   }

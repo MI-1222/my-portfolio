@@ -16,15 +16,21 @@
     "deploy": "wrangler deploy"
   },
   "dependencies": {
+    "@astrojs/markdown-remark": "^7.3.4",
+    "@astrojs/mdx": "^8.1.1",
     "@astrojs/preact": "^6.1.1",
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.3.8",
     "gsap": "^3.15.0",
-    "mermaid": "^12.2.0",
+    "katex": "^0.19.1",
+    "pele": "^1.10.0",
     "preact": "^11.0.2",
+    "rehype-katex": "^7.0.1",
+    "remark-math": "^6.0.0",
     "tailwindcss": "^4.3.3"
   },
   "devDependencies": {
+    "@tailwindcss/typography": "^0.5.20",
     "eslint": "^10.13.0",
     "eslint-plugin-astro": "^3.2.1",
     "eslint-plugin-tailwindcss": "^4.4.0",

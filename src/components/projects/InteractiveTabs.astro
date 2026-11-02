@@ -1,0 +1,207 @@
+---
+/**
+ * アーキテクチャやコード比較用の対話型タブ切り替えコンポーネント。
+ * WAI-ARIA タブパターンに準拠し、サイバー調の境界線とアクティブインジケータを備える。
+ */
+interface TabItem {
+  /** タブの一意識別子(スロット名と一致)。 */
+  id: string;
+  /** タブの表示ラベル。 */
+  label: string;
+  /** ラベル脇に添える小さなバッジ(任意)。 */
+  badge?: string;
+}
+
+interface Props {
+  /** タブ定義の配列。 */
+  tabs: TabItem[];
+  /** 初期選択タブの ID (省略時は先頭要素)。 */
+  defaultTab?: string;
+  /** 外枠のタイトルラベル(任意)。 */
+  title?: string;
+}
+
+const { tabs, defaultTab, title } = Astro.props;
+const initialTabId = defaultTab ?? tabs[0]?.id ?? '';
+const containerId = `tabs-${Math.random().toString(36).slice(2, 9)}`;
+---
+
+<div
+  id={containerId}
+  class="interactive-tabs-container my-6 rounded-lg border border-border-subtle bg-surface/50 overflow-hidden not-prose"
+  data-active-tab={initialTabId}
+>
+  <div class="flex flex-wrap items-center justify-between border-b border-border-subtle bg-bg-surface px-3 py-2 gap-2">
+    {title && (
+      <div class="flex items-center gap-2 font-mono text-[11px] font-semibold text-text-muted uppercase tracking-wider">
+        <span class="inline-block size-2 rounded-full bg-accent-cyan/80"></span>
+        <span>{title}</span>
+      </div>
+    )}
+
+    <div
+      role="tablist"
+      aria-label={title ?? 'コンテンツ切り替えタブ'}
+      class="flex flex-wrap items-center gap-1.5"
+    >
+      {tabs.map((tab) => {
+        const isSelected = tab.id === initialTabId;
+        return (
+          <button
+            type="button"
+            role="tab"
+            id={`${containerId}-tab-${tab.id}`}
+            aria-controls={`${containerId}-panel-${tab.id}`}
+            aria-selected={isSelected ? 'true' : 'false'}
+            tabindex={isSelected ? 0 : -1}
+            data-tab-target={tab.id}
+            class:list={[
+              'tab-trigger group flex items-center gap-1.5 rounded-md px-3 py-1 font-mono text-xs transition-all duration-150',
+              isSelected
+                ? 'bg-surface text-accent-cyan border border-border-strong font-semibold shadow-xs'
+                : 'text-text-muted hover:text-text-primary hover:bg-surface-hover/70',
+            ]}
+          >
+            <span>{tab.label}</span>
+            {tab.badge && (
+              <span
+                class:list={[
+                  'rounded px-1 py-0.2 text-[10px] font-mono uppercase',
+                  isSelected
+                    ? 'bg-accent-cyan/15 text-accent-cyan'
+                    : 'bg-bg-primary text-text-muted group-hover:text-text-secondary',
+                ]}
+              >
+                {tab.badge}
+              </span>
+            )}
+          </button>
+        );
+      })}
+    </div>
+  </div>
+
+  <div class="tabs-content-wrapper p-4 sm:p-5">
+    {tabs.map((tab) => {
+      const isSelected = tab.id === initialTabId;
+      return (
+        <div
+          role="tabpanel"
+          id={`${containerId}-panel-${tab.id}`}
+          aria-labelledby={`${containerId}-tab-${tab.id}`}
+          data-tab-panel={tab.id}
+          class:list={[
+            'tab-panel transition-opacity duration-200',
+            isSelected ? 'block opacity-100' : 'hidden opacity-0',
+          ]}
+        >
+          <slot name={tab.id} />
+        </div>
+      );
+    })}
+  </div>
+</div>
+
+<script>
+  /** タブ切り替えのクリックおよびキーボード操作を設定する。 */
+  function setupInteractiveTabs(): void {
+    const containers = document.querySelectorAll<HTMLElement>(
+      '.interactive-tabs-container',
+    );
+
+    containers.forEach((container) => {
+      if (container.dataset.initialized === 'true') {
+        return;
+      }
+      container.dataset.initialized = 'true';
+
+      const triggers =
+        container.querySelectorAll<HTMLButtonElement>('.tab-trigger');
+      const panels = container.querySelectorAll<HTMLElement>('.tab-panel');
+
+      const selectTab = (targetId: string): void => {
+        container.dataset.activeTab = targetId;
+
+        triggers.forEach((trigger) => {
+          const isTarget = trigger.dataset.tabTarget === targetId;
+          trigger.setAttribute('aria-selected', isTarget ? 'true' : 'false');
+          trigger.tabIndex = isTarget ? 0 : -1;
+
+          if (isTarget) {
+            trigger.classList.add(
+              'bg-surface',
+              'text-accent-cyan',
+              'border',
+              'border-border-strong',
+              'font-semibold',
+              'shadow-xs',
+            );
+            trigger.classList.remove(
+              'text-text-muted',
+              'hover:text-text-primary',
+              'hover:bg-surface-hover/70',
+            );
+          } else {
+            trigger.classList.remove(
+              'bg-surface',
+              'text-accent-cyan',
+              'border',
+              'border-border-strong',
+              'font-semibold',
+              'shadow-xs',
+            );
+            trigger.classList.add(
+              'text-text-muted',
+              'hover:text-text-primary',
+              'hover:bg-surface-hover/70',
+            );
+          }
+        });
+
+        panels.forEach((panel) => {
+          const isTarget = panel.dataset.tabPanel === targetId;
+          if (isTarget) {
+            panel.classList.remove('hidden');
+            panel.classList.add('block', 'opacity-100');
+          } else {
+            panel.classList.add('hidden');
+            panel.classList.remove('block', 'opacity-100');
+          }
+        });
+      };
+
+      triggers.forEach((trigger, idx) => {
+        trigger.addEventListener('click', () => {
+          const targetId = trigger.dataset.tabTarget;
+          if (targetId) {
+            selectTab(targetId);
+          }
+        });
+
+        // 左右矢印キーによるナビゲーション。
+        trigger.addEventListener('keydown', (e: KeyboardEvent) => {
+          let nextIdx: number | null = null;
+          if (e.key === 'ArrowRight') {
+            nextIdx = (idx + 1) % triggers.length;
+          } else if (e.key === 'ArrowLeft') {
+            nextIdx = (idx - 1 + triggers.length) % triggers.length;
+          }
+
+          if (nextIdx !== null) {
+            e.preventDefault();
+            const nextTrigger = triggers[nextIdx];
+            nextTrigger?.focus();
+            const targetId = nextTrigger?.dataset.tabTarget;
+            if (targetId) {
+              selectTab(targetId);
+            }
+          }
+        });
+      });
+    });
+  }
+
+  // 初回ロードおよび Astro ページ遷移時にバインドする。
+  setupInteractiveTabs();
+  document.addEventListener('astro:page-load', setupInteractiveTabs);
+</script>

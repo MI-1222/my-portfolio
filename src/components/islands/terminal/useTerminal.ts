@@ -99,21 +99,70 @@ export function useTerminal() {
     ]);
   }, [addLines]);
 
+  /** コマンド実行処理。 */
+  const runCommand = useCallback(
+    async (commandStr: string) => {
+      const trimmed = commandStr.trim();
+      if (!trimmed) {
+        addLine({ type: 'input', text: '' });
+        return;
+      }
+
+      // プロンプト行をログに追加する。
+      addLine({ type: 'input', text: trimmed });
+
+      // 履歴配列に追加する。
+      setHistory((prev) => [...prev, trimmed]);
+      setHistoryIndex(-1);
+      setInput('');
+      playClickSound();
+
+      const context: CommandContext = {
+        addLine,
+        addLines,
+        clearLines,
+        closeTerminal,
+        setTheme,
+        navigateTo,
+        setBusy: setIsBusy,
+        isBusy: () => isBusy,
+      };
+
+      await executeCommand(trimmed, context);
+    },
+    [
+      addLine,
+      addLines,
+      clearLines,
+      closeTerminal,
+      setTheme,
+      navigateTo,
+      isBusy,
+    ],
+  );
+
   /** ターミナルを開く。 */
-  const openTerminal = useCallback(() => {
-    playClickSound();
-    window.dispatchEvent(new CustomEvent('close-cmdk'));
-    setIsOpen(true);
-    printWelcome();
-    setTimeout(() => {
-      inputRef.current?.focus();
-    }, 50);
-  }, [printWelcome]);
+  const openTerminal = useCallback(
+    (commandToRun?: string) => {
+      playClickSound();
+      window.dispatchEvent(new CustomEvent('close-cmdk'));
+      setIsOpen(true);
+      printWelcome();
+      setTimeout(() => {
+        inputRef.current?.focus();
+        if (commandToRun) {
+          void runCommand(commandToRun);
+        }
+      }, 50);
+    },
+    [printWelcome, runCommand],
+  );
 
   /** 外部イベントやショートカットキーの購読。 */
   useEffect(() => {
-    const handleOpenEvent = () => {
-      openTerminal();
+    const handleOpenEvent = (e: Event) => {
+      const customEvent = e as CustomEvent<{ command?: string }>;
+      openTerminal(customEvent.detail?.command);
     };
 
     const handleCloseEvent = () => {
@@ -210,48 +259,6 @@ export function useTerminal() {
       document.body.style.overflow = '';
     };
   }, [isOpen]);
-
-  /** コマンド実行処理。 */
-  const runCommand = useCallback(
-    async (commandStr: string) => {
-      const trimmed = commandStr.trim();
-      if (!trimmed) {
-        addLine({ type: 'input', text: '' });
-        return;
-      }
-
-      // プロンプト行をログに追加する。
-      addLine({ type: 'input', text: trimmed });
-
-      // 履歴配列に追加する。
-      setHistory((prev) => [...prev, trimmed]);
-      setHistoryIndex(-1);
-      setInput('');
-      playClickSound();
-
-      const context: CommandContext = {
-        addLine,
-        addLines,
-        clearLines,
-        closeTerminal,
-        setTheme,
-        navigateTo,
-        setBusy: setIsBusy,
-        isBusy: () => isBusy,
-      };
-
-      await executeCommand(trimmed, context);
-    },
-    [
-      addLine,
-      addLines,
-      clearLines,
-      closeTerminal,
-      setTheme,
-      navigateTo,
-      isBusy,
-    ],
-  );
 
   /** キー入力イベントハンドラ。 */
   const handleKeyDown = useCallback(

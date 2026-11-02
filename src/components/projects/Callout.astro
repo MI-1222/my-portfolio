@@ -1,0 +1,133 @@
+---
+import CalloutIcon from '../svg/CalloutIcon.astro';
+
+/**
+ * 技術仕様書・解説記事向けのサイバー調コールアウト(注記・Tips・警告)コンポーネント。
+ * WAI-ARIA に準拠し、記事内の重要な知見やコラムを視覚的に強調する。
+ */
+interface Props {
+  /** コールアウトの種別。デフォルト: 'note'。 */
+  type?: 'note' | 'tip' | 'important' | 'warning' | 'caution';
+  /** 見出しタイトル(任意)。 */
+  title?: string;
+}
+
+const { type = 'note', title } = Astro.props;
+
+/** 種別ごとの表示ラベル、アクセントバー背景色、バッジ配色定義。 */
+const TYPE_CONFIG = {
+  note: {
+    label: 'NOTE',
+    barClass: 'bg-accent-purple',
+    badgeClass:
+      'bg-accent-purple/10 text-accent-purple border-accent-purple/30',
+  },
+  tip: {
+    label: 'TIP',
+    barClass: 'bg-accent-green',
+    badgeClass: 'bg-accent-green/10 text-accent-green border-accent-green/30',
+  },
+  important: {
+    label: 'IMPORTANT',
+    barClass: 'bg-accent-cyan',
+    badgeClass: 'bg-accent-cyan/10 text-accent-cyan border-accent-cyan/30',
+  },
+  warning: {
+    label: 'WARNING',
+    barClass: 'bg-[#e3b341]',
+    badgeClass: 'bg-[#e3b341]/10 text-[#e3b341] border-[#e3b341]/30',
+  },
+  caution: {
+    label: 'CAUTION',
+    barClass: 'bg-accent-coral',
+    badgeClass: 'bg-accent-coral/10 text-accent-coral border-accent-coral/30',
+  },
+} as const;
+
+const config = TYPE_CONFIG[type] ?? TYPE_CONFIG.note;
+---
+
+<aside
+  class="callout-container relative my-6 overflow-hidden rounded-lg border border-border-subtle bg-surface/70 pl-5 pr-4 py-4 sm:pl-6 sm:pr-5 sm:py-5 backdrop-blur-sm not-prose transition-colors"
+  role="note"
+  aria-label={title ?? config.label}
+>
+  <!-- 角丸に美しく連動する左端アクセントバー -->
+  <div
+    class:list={['absolute inset-y-0 left-0 w-1', config.barClass]}
+    aria-hidden="true"
+  ></div>
+
+  <div class="callout-header mb-3 flex items-center gap-2.5">
+    <span
+      class:list={[
+        'inline-flex items-center gap-1.5 rounded border px-2 py-0.5 font-mono text-[11px] font-bold tracking-wider leading-none shrink-0',
+        config.badgeClass,
+      ]}
+    >
+      <CalloutIcon type={type} class="size-3.5 shrink-0" ariaHidden={true} />
+      {config.label}
+    </span>
+
+    {title && (
+      <span class="callout-title font-mono text-sm font-semibold tracking-tight text-text-primary leading-none">
+        {title}
+      </span>
+    )}
+  </div>
+
+  <div class="callout-body space-y-3 font-sans text-sm leading-relaxed text-text-secondary">
+    <slot />
+  </div>
+</aside>
+
+<style>
+  /** タイトルおよびヘッダーのマージン崩れを完全リセット。 */
+  .callout-header {
+    margin-top: 0 !important;
+  }
+  .callout-title {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  /** Markdown 段落のマージン調整。 */
+  .callout-body :global(p) {
+    margin: 0.5rem 0;
+    line-height: 1.75;
+  }
+  .callout-body :global(p:first-child) {
+    margin-top: 0;
+  }
+  .callout-body :global(p:last-child) {
+    margin-bottom: 0;
+  }
+  /** リスト要素のスタイル調整。 */
+  .callout-body :global(ul) {
+    list-style-type: disc;
+    padding-left: 1.25rem;
+    margin: 0.5rem 0;
+  }
+  .callout-body :global(ol) {
+    list-style-type: decimal;
+    padding-left: 1.25rem;
+    margin: 0.5rem 0;
+  }
+  .callout-body :global(li) {
+    margin: 0.25rem 0;
+  }
+  /** インラインコードの強調。 */
+  .callout-body :global(:not(pre) > code) {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    padding: 0.15em 0.35em;
+    border-radius: 0.25rem;
+    background-color: var(--color-surface-subtle);
+    color: var(--color-accent-cyan);
+    border: 1px solid var(--color-border-subtle);
+  }
+  /** 強調テキスト。 */
+  .callout-body :global(strong) {
+    color: var(--color-text-primary);
+    font-weight: 600;
+  }
+</style>

@@ -1,0 +1,234 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "sokuto: 全体推論カスケード ＆ 双方向安全弁アーキテクチャ",
+    "subtitle": "Dual-Tier推論基盤・双方向ガードレール・3軸Pareto最適ゲーティングによるミリ秒確定判断",
+    "animation": "trace",
+    "visual_preset": "signal-flow",
+    "quality_profile": "showcase",
+    "output": "public/diagrams/sokuto/cascade-architecture.html"
+  },
+  "lanes": [
+    { "id": "client", "label": "クライアント ＆ 入力コンテキスト" },
+    { "id": "guardrail", "label": "インラインガードレールプロキシ" },
+    { "id": "system1", "label": "System 1: sokuto 推論コア" },
+    { "id": "gating", "label": "3軸 Pareto 最適ゲーティング" },
+    {
+      "id": "system2",
+      "label": "System 2: フロンティア LLM",
+      "variant": "exception"
+    }
+  ],
+  "phases": [
+    {
+      "id": "ingress",
+      "label": "入力受付 ＆ 安全検査",
+      "fromCol": 0,
+      "toCol": 1,
+      "variant": "default"
+    },
+    {
+      "id": "deterministic",
+      "label": "ミリ秒確定推論",
+      "fromCol": 2,
+      "toCol": 3,
+      "variant": "emphasis"
+    },
+    {
+      "id": "resolution",
+      "label": "結果確定 ＆ 救済委譲",
+      "fromCol": 4,
+      "toCol": 5,
+      "variant": "default"
+    }
+  ],
+  "groups": [
+    {
+      "id": "guard_group",
+      "label": "リアルタイム事前検査 (P99 0.44ms)",
+      "lane": "guardrail",
+      "fromCol": 1,
+      "toCol": 2,
+      "variant": "security"
+    },
+    {
+      "id": "engine_group",
+      "label": "ゼロアロケーション実行 (12.6ms)",
+      "lane": "system1",
+      "fromCol": 2,
+      "toCol": 3,
+      "variant": "emphasis"
+    },
+    {
+      "id": "escalation_group",
+      "label": "フロンティア LLM 救済推論 (16%)",
+      "lane": "system2",
+      "fromCol": 4,
+      "toCol": 5,
+      "variant": "dashed"
+    }
+  ],
+  "mainPath": [
+    "req_state",
+    "guard_proxy",
+    "sokuto_core",
+    "gate_eval",
+    "s1_decision"
+  ],
+  "nodes": [
+    {
+      "id": "req_state",
+      "lane": "client",
+      "col": 0,
+      "type": "external",
+      "icon": "start",
+      "label": "入力コンテキスト (State)",
+      "sublabel": "State + 質問 + 選択肢群 (JSON)",
+      "width": 172
+    },
+    {
+      "id": "guard_proxy",
+      "lane": "guardrail",
+      "col": 1,
+      "type": "security",
+      "icon": "security",
+      "label": "双方向ガードレール",
+      "sublabel": "Fast-Fail / NLI意味検証",
+      "tag": "P99 0.44ms",
+      "width": 160
+    },
+    {
+      "id": "guard_blocked",
+      "lane": "guardrail",
+      "col": 2,
+      "type": "security",
+      "icon": "stop",
+      "label": "安全弁即時遮断",
+      "sublabel": "不正記号・敵対的プロンプト棄却",
+      "width": 150
+    },
+    {
+      "id": "sokuto_core",
+      "lane": "system1",
+      "col": 2,
+      "type": "backend",
+      "icon": "backend",
+      "label": "sokuto 推論エンジン",
+      "sublabel": "ModernBERT-ja + SAB (単一順伝播)",
+      "tag": "CPU 12.6ms",
+      "width": 165
+    },
+    {
+      "id": "gate_eval",
+      "lane": "gating",
+      "col": 3,
+      "type": "backend",
+      "icon": "decision",
+      "label": "3軸 Pareto 最適ゲーティング",
+      "sublabel": "確信度 S_conf × マージン × 自由エネルギー",
+      "tag": "Pareto 最適",
+      "width": 195
+    },
+    {
+      "id": "s1_decision",
+      "lane": "client",
+      "col": 4,
+      "type": "frontend",
+      "icon": "success",
+      "label": "型付き決定 (AutoExecute)",
+      "sublabel": "ミリ秒即答・パース崩壊ゼロ・コスト$0",
+      "tag": "84.0% 高確信・即座に完了",
+      "width": 175
+    },
+    {
+      "id": "triage",
+      "lane": "system2",
+      "col": 4,
+      "type": "messagebus",
+      "icon": "active",
+      "label": "ニュートラル対比 Triage",
+      "sublabel": "境界例・競合候補の CoT 構築",
+      "width": 165
+    },
+    {
+      "id": "s2_llm",
+      "lane": "system2",
+      "col": 5,
+      "type": "cloud",
+      "icon": "cloud",
+      "label": "System 2 フロンティア LLM",
+      "sublabel": "思考の連鎖 (CoT) による救済推論",
+      "tag": "16.0% エスカレーション",
+      "width": 180
+    },
+    {
+      "id": "s2_fallback",
+      "lane": "client",
+      "col": 5,
+      "type": "frontend",
+      "icon": "neutral",
+      "label": "フォールバック完了",
+      "sublabel": "救済された型付き意思決定を返却",
+      "width": 150
+    }
+  ],
+  "edges": [
+    {
+      "id": "e_req_guard",
+      "from": "req_state",
+      "to": "guard_proxy",
+      "label": "推論要求",
+      "variant": "default"
+    },
+    {
+      "id": "e_guard_block",
+      "from": "guard_proxy",
+      "to": "guard_blocked",
+      "label": "異常検知",
+      "variant": "security"
+    },
+    {
+      "id": "e_guard_s1",
+      "from": "guard_proxy",
+      "to": "sokuto_core",
+      "label": "正常通過 (~0.4ms)",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e_s1_gate",
+      "from": "sokuto_core",
+      "to": "gate_eval",
+      "label": "確率幾何指標",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e_gate_s1",
+      "from": "gate_eval",
+      "to": "s1_decision",
+      "label": "高確信・分布内 (84%)",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e_gate_triage",
+      "from": "gate_eval",
+      "to": "triage",
+      "label": "低確信・境界例・OOD (16%)",
+      "variant": "dashed"
+    },
+    {
+      "id": "e_triage_s2",
+      "from": "triage",
+      "to": "s2_llm",
+      "label": "CoT 自動構築",
+      "variant": "dashed"
+    },
+    {
+      "id": "e_s2_done",
+      "from": "s2_llm",
+      "to": "s2_fallback",
+      "label": "救済決定返却",
+      "variant": "default"
+    }
+  ]
+}

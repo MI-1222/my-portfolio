@@ -1,0 +1,28 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+
+/**
+ * 全画面解除(縮小)アイコンコンポーネント。
+ * Google Material Symbols の fullscreen_exit を採用。
+ */
+interface Props extends HTMLAttributes<'svg'> {
+  /** 追加のCSSクラス名。 */
+  class?: string;
+  /** 装飾用アイコンとして支援技術から隠すかどうか(デフォルト: true)。 */
+  ariaHidden?: boolean;
+}
+
+const { class: className, ariaHidden = true, ...rest } = Astro.props;
+---
+
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 24 24"
+  fill="currentColor"
+  focusable="false"
+  class:list={['inline-block shrink-0', className]}
+  aria-hidden={ariaHidden ? 'true' : undefined}
+  {...rest}
+>
+  <path d="M6,21V18H3V16H8v5H6Zm10,0V16h5v2H18v3H16ZM3,8V6H6V3H8V8H3ZM16,8V3h2V6h3V8H16Z"></path>
+</svg>
