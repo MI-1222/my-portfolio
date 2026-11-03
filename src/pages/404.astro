@@ -1,0 +1,96 @@
+---
+/**
+ * 404 Not Found ページ。
+ * 存在しないルートへのアクセス時にサイバーミニマル調のHUDエラー画面を表示する。
+ */
+import Container from '../components/common/Container.astro';
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout
+  title="404: Route Not Found | MI-1222"
+  description="指定されたリソースまたはパスが見つかりませんでした。"
+>
+  <main class="flex min-h-[calc(100vh-16rem)] items-center justify-center py-16 sm:py-24">
+    <Container size="sm">
+      <div class="relative overflow-hidden rounded-xl border border-border-subtle bg-surface/80 p-6 sm:p-10 shadow-2xl backdrop-blur-md">
+        <div
+          class="pointer-events-none absolute inset-0 -z-10 opacity-20 bg-[radial-gradient(var(--color-border-subtle)_1px,transparent_1px)] bg-size-[16px_16px]"
+          aria-hidden="true"
+        ></div>
+
+        <div class="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle/80 pb-4 font-mono text-xs">
+          <div class="flex items-center gap-2 text-accent-coral">
+            <span class="inline-block size-2 rounded-full bg-accent-coral animate-ping"></span>
+            <span>ERR_CODE: 404_NOT_FOUND</span>
+          </div>
+          <div class="text-text-muted">
+            <span>ROUTE_STATUS: UNRESOLVED</span>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <div class="flex items-baseline gap-3">
+            <h1 class="font-mono text-5xl font-extrabold tracking-tight text-text-primary sm:text-6xl">
+              404
+            </h1>
+            <span class="font-mono text-sm font-semibold text-accent-coral sm:text-base">
+              [FILE_NOT_FOUND]
+            </span>
+          </div>
+
+          <p class="text-sm leading-relaxed text-text-secondary sm:text-base">
+            リクエストされた URI
+            パスまたは静的アセットは存在しないか、別の場所へ移動されました。
+          </p>
+
+          <div class="my-6 rounded-lg border border-border-subtle bg-canvas/90 p-4 font-mono text-xs text-text-secondary">
+            <div class="space-y-1.5 leading-relaxed">
+              <p>
+                <span class="text-accent-coral">$</span> curl -I{' '}
+                <span id="current-url" class="text-text-primary">
+                  ...
+                </span>
+              </p>
+              <p class="text-accent-coral">HTTP/1.1 404 Not Found</p>
+              <p class="text-text-muted">
+                &gt; Edge Router: Cloudflare Workers (Static Assets)
+              </p>
+              <p class="text-text-muted">
+                &gt; Message: No matching route pattern in Astro page manifest.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-8 flex flex-wrap items-center gap-4 font-mono text-xs">
+          <a
+            href="/"
+            class="inline-flex items-center gap-2 rounded-lg bg-text-primary px-5 py-2.5 font-semibold text-canvas transition-opacity hover:opacity-90"
+          >
+            <span>← Return to Home</span>
+          </a>
+          <a
+            href="/history"
+            class="inline-flex items-center gap-2 rounded-lg border border-border-subtle bg-surface px-4 py-2.5 font-medium text-text-primary transition-colors hover:border-border-strong hover:bg-surface-subtle"
+          >
+            <span>View History / Log</span>
+          </a>
+        </div>
+      </div>
+    </Container>
+  </main>
+</Layout>
+
+<script>
+  /** クライアント側で現在のパスを擬似ターミナルに反映する */
+  function setCurrentPath(): void {
+    const urlSpan = document.getElementById('current-url');
+    if (urlSpan) {
+      urlSpan.textContent = window.location.pathname;
+    }
+  }
+
+  document.addEventListener('astro:page-load', setCurrentPath);
+  setCurrentPath();
+</script>
