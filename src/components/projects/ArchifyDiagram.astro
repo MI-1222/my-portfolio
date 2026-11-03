@@ -106,10 +106,7 @@ const embedSrc = src.includes('?') ? `${src}&embed=1` : `${src}?embed=1`;
           aria-label="全画面表示を切り替える。"
         >
           <Fullscreen class="size-3 expand-icon" ariaHidden={true} />
-          <FullscreenExit
-            class="size-3 collapse-icon hidden"
-            ariaHidden={true}
-          />
+          <FullscreenExit class="size-3 collapse-icon" ariaHidden={true} />
           <span class="btn-text hidden sm:inline">Expand</span>
         </button>
       )}
@@ -141,6 +138,19 @@ const embedSrc = src.includes('?') ? `${src}&embed=1` : `${src}?embed=1`;
 </div>
 
 <style>
+  /* アイコンの表示・非表示制御 */
+  :global(.archify-diagram-container .collapse-icon) {
+    display: none !important;
+  }
+
+  :global(.archify-diagram-container.is-fullscreen .expand-icon) {
+    display: none !important;
+  }
+
+  :global(.archify-diagram-container.is-fullscreen .collapse-icon) {
+    display: inline-block !important;
+  }
+
   /* フルスクリーン時のスタイル定義。 */
   :global(.archify-diagram-container.is-fullscreen) {
     position: fixed !important;
@@ -188,23 +198,17 @@ const embedSrc = src.includes('?') ? `${src}&embed=1` : `${src}?embed=1`;
 
         const isFullscreen = container.classList.toggle('is-fullscreen');
         const btnText = btn.querySelector('.btn-text');
-        const expandIcon = btn.querySelector('.expand-icon');
-        const collapseIcon = btn.querySelector('.collapse-icon');
 
         if (isFullscreen) {
           document.body.style.overflow = 'hidden';
           if (btnText) {
             btnText.textContent = 'Collapse';
           }
-          expandIcon?.classList.add('hidden');
-          collapseIcon?.classList.remove('hidden');
         } else {
           document.body.style.overflow = '';
           if (btnText) {
             btnText.textContent = 'Expand';
           }
-          expandIcon?.classList.remove('hidden');
-          collapseIcon?.classList.add('hidden');
         }
 
         // 全画面切り替え時に iframe 内の自動 Fit リサイズを発火する。
@@ -232,14 +236,6 @@ const embedSrc = src.includes('?') ? `${src}&embed=1` : `${src}?embed=1`;
           if (activeBtn) {
             activeBtn.textContent = 'Expand';
           }
-          const expandIcon = activeContainer.querySelector(
-            '.archify-fullscreen-btn .expand-icon',
-          );
-          const collapseIcon = activeContainer.querySelector(
-            '.archify-fullscreen-btn .collapse-icon',
-          );
-          expandIcon?.classList.remove('hidden');
-          collapseIcon?.classList.add('hidden');
           const iframe =
             activeContainer.querySelector<HTMLIFrameElement>('iframe');
           if (iframe && iframe.contentWindow) {
