@@ -20,8 +20,8 @@ const SECURITY_HEADERS: Record<string, string> = {
   // MIMEタイプのスニッフィングを防止。
   'X-Content-Type-Options': 'nosniff',
 
-  // クリックジャッキング対策(iframe埋め込み禁止)。
-  'X-Frame-Options': 'DENY',
+  // クリックジャッキング対策(同一オリジンからのiframe埋め込みのみ許可)。
+  'X-Frame-Options': 'SAMEORIGIN',
 
   // リファラー情報の漏洩制御。
   'Referrer-Policy': 'strict-origin-when-cross-origin',
@@ -41,7 +41,8 @@ const SECURITY_HEADERS: Record<string, string> = {
     "font-src 'self' https://fonts.gstatic.com data:",
     "img-src 'self' data: https:",
     "connect-src 'self'",
-    "frame-ancestors 'none'",
+    "frame-src 'self'",
+    "frame-ancestors 'self'",
     "base-uri 'self'",
     "form-action 'self'",
   ].join('; '),
@@ -70,10 +71,7 @@ export default {
     // 静的キャッシュ制御(不変なハッシュ付きファイル等の最適化)。
     const url = new URL(request.url);
     if (url.pathname.startsWith('/_astro/')) {
-      newHeaders.set(
-        'Cache-Control',
-        'public, max-age=31536000, immutable'
-      );
+      newHeaders.set('Cache-Control', 'public, max-age=31536000, immutable');
     }
 
     return new Response(response.body, {
